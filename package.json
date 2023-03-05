@@ -4,7 +4,9 @@
   "description": "",
   "main": "arb.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node run.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "node app/setup.js"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +23,11 @@
     "dotenv": "^14.2.0",
     "ethereum-waffle": "^3.2.0",
     "ethers": "^5.0.0",
-    "hardhat": "^2.8.3"
+    "hardhat": "^2.8.3",
+    "pg": "^8.9.0",
+    "prompt-sync": "^4.2.0",
+    "web3": "^1.8.2",
+    "web3-eth-contract": "^1.8.2",
+    "yargs": "^17.7.1"
   }
 }

@@ -14,6 +14,10 @@ module.exports = {
       url: `https://rpc.ftm.tools/`,
       accounts: [process.env.privateKey],
     },
+    bsc: {
+      url: process.env.CHAIN_STACK_HTTPS,
+      accounts: [process.env.privateKey],
+    },
   },
   solidity: {
     compilers: [

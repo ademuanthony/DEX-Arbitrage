@@ -123,6 +123,7 @@ contract InstaArb is Ownable {
     uint token2InitialBalance = IERC20(_token2).balanceOf(address(this));
     uint token3InitialBalance = IERC20(_token3).balanceOf(address(this));
     uint token4InitialBalance = IERC20(_token4).balanceOf(address(this));
+    
     swap(_router1,_token1, _token2, _amount);
     uint tradeableAmount2 = IERC20(_token2).balanceOf(address(this)) - token2InitialBalance;
     swap(_router1,_token2, _token3, tradeableAmount2);

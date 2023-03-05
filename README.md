@@ -29,7 +29,7 @@ Then add the arbContract deployment address to config/aurora.json edit the base 
 Then to execute run:-
 
 ```shell
-npx hardhat run --network aurora .\scripts\trade.js
+npx hardhat run --network bsc .\scripts\arbitrage.js
 ```
 
 Finally to recover any funds use the script.
