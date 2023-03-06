@@ -58,7 +58,7 @@ const runArb = async (token, addTokensCalled) => {
   }
   if (!pairs || pairs.length === 0) return;
 
-  const amountIn = rand(50, 400)/1000;
+  const amountIn = rand(50, 200)/1000;
 
   await scanForOpportunity(pairs, token, amountIn.toString());
 };

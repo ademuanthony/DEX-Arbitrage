@@ -174,7 +174,10 @@ const addExchange = async () => {
 const testArbitrage = async () => {
   const token0 = prompt('Target token: ');
   const testAmount = prompt('Order size: ');
-  await scanForOpportunity(token0, testAmount);
+  const pairs = await db.getPairs(token0.toString());
+  if (!pairs || pairs.length === 0) return;
+
+  await scanForOpportunity(pairs, token0, testAmount);
   quitOrRerun();
 };
 
@@ -196,4 +199,5 @@ module.exports = {
   removeToken,
   addExchange,
   quitOrRerun,
+  testArbitrage
 };

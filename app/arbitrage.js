@@ -9,6 +9,8 @@ const {
   STANDARD_GAS_PRICE,
   BUSD_ADDRESS,
   USDT_ADDRESS,
+  CAKE_WBNB_BUSD_PAIR,
+  CAKE_WBNB_USDT_PAIR,
 } = require('./globals');
 const db = require('./token-store');
 const { Contract, web3 } = require('./web3-contract');
@@ -130,6 +132,7 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
     );
 
     console.log(bestRoute);
+    return
 
     await executeTrade(bestRoute, amountIn, grossProfit);
 
@@ -245,14 +248,14 @@ const build_WBNB_TKN_WBNB_route = async (lpPairs, token) => {
   for (let i = 0; i < bnbPairs.length; i++) {
     for (let j = i + 1; j < bnbPairs.length; j++) {
       routes.push([
-        bnbPairs[i].router,
-        bnbPairs[j].router,
+        bnbPairs[i].pair_address,
+        bnbPairs[j].pair_address,
         WBNB_ADDRESS,
         token,
       ]);
       routes.push([
-        bnbPairs[j].router,
-        bnbPairs[i].router,
+        bnbPairs[j].pair_address,
+        bnbPairs[i].pair_address,
         WBNB_ADDRESS,
         token,
       ]);
@@ -270,9 +273,9 @@ const build_WBNB_TKN_BUSD_WBNB_routes = async (lpPairs, token) => {
   for (let i = 0; i < bnbPairs.length; i++) {
     for (let j = 0; j < busdPairs.length; j++) {
       routes.push([
-        bnbPairs[i].router,
-        busdPairs[j].router,
-        bnbPairs[i].router,
+        bnbPairs[i].pair_address,
+        busdPairs[j].pair_address,
+        bnbPairs[i].pair_address,
         WBNB_ADDRESS,
         token,
         BUSD_ADDRESS,
@@ -292,9 +295,9 @@ const build_WBNB_BUSD_TKN_WBNB_routes = async (lpPairs, token) => {
   for (let i = 0; i < bnbPairs.length; i++) {
     for (let j = 0; j < busdPairs.length; j++) {
       routes.push([
-        bnbPairs[i].router,
-        busdPairs[j].router,
-        bnbPairs[i].router,
+        bnbPairs[i].pair_address,
+        busdPairs[j].pair_address,
+        bnbPairs[i].pair_address,
         WBNB_ADDRESS,
         BUSD_ADDRESS,
         token,
@@ -314,9 +317,9 @@ const build_WBNB_TKN_USDT_WBNB_routes = async (lpPairs, token) => {
   for (let i = 0; i < bnbPairs.length; i++) {
     for (let j = 0; j < usdtPairs.length; j++) {
       routes.push([
-        bnbPairs[i].router,
-        usdtPairs[j].router,
-        bnbPairs[i].router,
+        bnbPairs[i].pair_address,
+        usdtPairs[j].pair_address,
+        bnbPairs[i].pair_address,
         WBNB_ADDRESS,
         token,
         BUSD_ADDRESS,
@@ -336,9 +339,9 @@ const build_WBNB_USDT_TKN_WBNB_routes = async (lpPairs, token) => {
   for (let i = 0; i < bnbPairs.length; i++) {
     for (let j = 0; j < usdtPairs.length; j++) {
       routes.push([
-        bnbPairs[i].router,
-        usdtPairs[j].router,
-        bnbPairs[i].router,
+        bnbPairs[i].pair_address,
+        usdtPairs[j].pair_address,
+        bnbPairs[i].pair_address,
         WBNB_ADDRESS,
         BUSD_ADDRESS,
         token,
@@ -361,20 +364,20 @@ const build_WBNB_BUSD_TKN_BUSD_WBNB_routes = async (lpPairs, token) => {
   const routes = [];
   for (let i = 0; i < twoList.length; i++) {
     routes.push([
-      CAKE_ROUTER_ADDRESS,
-      twoList[0].router,
-      twoList[1].router,
-      CAKE_ROUTER_ADDRESS,
+      CAKE_WBNB_BUSD_PAIR,
+      twoList[0].pair_address,
+      twoList[1].pair_address,
+      CAKE_WBNB_BUSD_PAIR,
       WBNB_ADDRESS,
       BUSD_ADDRESS,
       token,
       BUSD_ADDRESS,
     ]);
     routes.push([
-      CAKE_ROUTER_ADDRESS,
-      twoList[1].router,
-      twoList[0].router,
-      CAKE_ROUTER_ADDRESS,
+      CAKE_WBNB_BUSD_PAIR,
+      twoList[1].pair_address,
+      twoList[0].pair_address,
+      CAKE_WBNB_BUSD_PAIR,
 
       WBNB_ADDRESS,
       BUSD_ADDRESS,
@@ -398,20 +401,20 @@ const build_WBNB_USDT_TKN_USDT_WBNB_routes = async (lpPairs, token) => {
   const routes = [];
   for (let i = 0; i < twoList.length; i++) {
     routes.push([
-      CAKE_ROUTER_ADDRESS,
-      twoList[0].router,
-      twoList[1].router,
-      CAKE_ROUTER_ADDRESS,
+      CAKE_WBNB_USDT_PAIR,
+      twoList[0].pair_address,
+      twoList[1].pair_address,
+      CAKE_WBNB_USDT_PAIR,
       WBNB_ADDRESS,
       USDT_ADDRESS,
       token,
       USDT_ADDRESS,
     ]);
     routes.push([
-      CAKE_ROUTER_ADDRESS,
-      twoList[1].router,
-      twoList[0].router,
-      CAKE_ROUTER_ADDRESS,
+      CAKE_WBNB_USDT_PAIR,
+      twoList[1].pair_address,
+      twoList[0].pair_address,
+      CAKE_WBNB_USDT_PAIR,
 
       WBNB_ADDRESS,
       USDT_ADDRESS,

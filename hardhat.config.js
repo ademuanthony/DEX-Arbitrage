@@ -18,6 +18,10 @@ module.exports = {
       url: process.env.CHAIN_STACK_HTTPS,
       accounts: [process.env.privateKey],
     },
+    bscTestnet: {
+      url: process.env.CHAIN_STACK_BSC_TESTNET_HTTPS,
+      accounts: [process.env.privateKey],
+    },
   },
   solidity: {
     compilers: [

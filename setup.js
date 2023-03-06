@@ -3,6 +3,7 @@ const {
   addToken,
   removeToken,
   addExchange,
+  testArbitrage,
   quitOrRerun,
 } = require('./app/arb-setup');
 const prompt = require('prompt-sync')();
@@ -11,7 +12,7 @@ const main = async () => {
   console.log(`
   Welcome to setup!!!
   
-  Options:
+  Options: 
   1: Add token
   2: Remove token
   3: Add pair

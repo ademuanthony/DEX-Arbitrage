@@ -6,12 +6,13 @@ let config,arb,owner;
 const network = hre.network.name;
 if (network === 'aurora') config = require('./../config/aurora.json');
 if (network === 'fantom') config = require('./../config/fantom.json');
+if (network === 'bsc') config = require('./../config/bsc.json');
 
 const main = async () => {
   [owner] = await ethers.getSigners();
   console.log(`Owner: ${owner.address}`);
   const IArb = await ethers.getContractFactory('Arb');
-  arb = await IArb.attach(config.arbContract);
+  arb = await IArb.attach(process.env.TRIGGER_ADDRESS);
   for (let i = 0; i < config.baseAssets.length; i++) {
     const asset = config.baseAssets[i];
     let balance = await arb.getBalance(asset.address);

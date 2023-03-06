@@ -209,8 +209,29 @@ library PancakeLibrary {
     }
 }
 
-contract Arb is Ownable {
+contract Arb0 is Ownable {
     address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+
+    function swap0(
+        address router,
+        address _tokenIn,
+        address _tokenOut,
+        uint256 _amount
+    ) private {
+        IERC20(_tokenIn).approve(router, _amount);
+        address[] memory path;
+        path = new address[](2);
+        path[0] = _tokenIn;
+        path[1] = _tokenOut;
+        uint256 deadline = block.timestamp + 300;
+        IUniswapV2Router(router).swapExactTokensForTokens(
+            _amount,
+            1,
+            path,
+            address(this),
+            deadline
+        );
+    }
 
     // requires token to have been sent to lp
     function swap(
@@ -219,7 +240,8 @@ contract Arb is Ownable {
         address tokenOut,
         address to,
         uint256 amount
-    ) private returns (uint256) {
+    ) private returns(uint256) {
+        (address token0, ) = PancakeLibrary.sortTokens(tokenIn, tokenOut);
         (uint256 reserve0, uint256 reserve1) = PancakeLibrary.getReserves(
             pair,
             tokenIn,
@@ -230,16 +252,14 @@ contract Arb is Ownable {
             "PancakeLibrary: INSUFFICIENT_LIQUIDITY"
         );
 
-        (address token0, ) = PancakeLibrary.sortTokens(tokenIn, tokenOut);
-
-        (uint256 reserveIn, uint256 reserveOut) = tokenIn != token0 // TODO: find out why
+        (uint256 reserveA, uint256 reserveB) = tokenIn == token0
             ? (reserve0, reserve1)
             : (reserve1, reserve0);
 
         uint256 amountOut = PancakeLibrary.getAmountOut(
             amount,
-            reserveIn,
-            reserveOut
+            reserveA,
+            reserveB
         );
 
         (uint256 amount0Out, uint256 amount1Out) = tokenIn == token0
@@ -248,44 +268,36 @@ contract Arb is Ownable {
 
         IUniswapV2Pair(pair).swap(amount0Out, amount1Out, to, new bytes(0));
 
-        return amountOut;
+				return amountOut;
     }
 
     function getAmountOutMin(
-        address _pair,
+        address router,
         address _tokenIn,
         address _tokenOut,
         uint256 _amount
     ) public view returns (uint256) {
-        (uint256 reserve0, uint256 reserve1) = PancakeLibrary.getReserves(
-            _pair,
-            _tokenIn,
-            _tokenOut
+        address[] memory path;
+        path = new address[](2);
+        path[0] = _tokenIn;
+        path[1] = _tokenOut;
+        uint256[] memory amountOutMins = IUniswapV2Router(router).getAmountsOut(
+            _amount,
+            path
         );
-        require(
-            reserve0 > 0 && reserve1 > 0,
-            "PancakeLibrary: INSUFFICIENT_LIQUIDITY"
-        );
-
-        (address token0, ) = PancakeLibrary.sortTokens(_tokenIn, _tokenOut);
-
-        (uint256 reserveIn, uint256 reserveOut) = _tokenIn != token0 // TODO: find out why
-            ? (reserve0, reserve1)
-            : (reserve1, reserve0);
-
-        return PancakeLibrary.getAmountOut(_amount, reserveIn, reserveOut);
+        return amountOutMins[path.length - 1];
     }
 
     function estimateDualDexTrade(
-        address _pair1,
-        address _pair2,
+        address _router1,
+        address _router2,
         address _token1,
         address _token2,
         uint256 _amount
     ) external view returns (uint256) {
-        uint256 amtBack1 = getAmountOutMin(_pair1, _token1, _token2, _amount);
+        uint256 amtBack1 = getAmountOutMin(_router1, _token1, _token2, _amount);
         uint256 amtBack2 = getAmountOutMin(
-            _pair2,
+            _router2,
             _token2,
             _token1,
             amtBack1
@@ -293,88 +305,44 @@ contract Arb is Ownable {
         return amtBack2;
     }
 
-    function swapTest(
-        address pair1,
-        address tokenIn,
-        address tokenOut,
-        uint256 amount
-    ) external onlyOwner {
-        IERC20(tokenIn).transfer(pair1, amount);
-        swap(pair1, tokenIn, tokenOut, address(this), amount);
-    }
-
-    function dualDexTradeTest(
-        address _pair1,
-        address _pair2,
-        address _token1,
-        address _token2,
-        uint256 _amount
-    ) external onlyOwner {
-        IERC20(_token1).transfer(_pair1, _amount);
-        uint256 tradeableAmount = swap(
-            _pair1,
-            _token1,
-            _token2,
-            _pair2,
-            _amount
-        );
-
-        uint256 amountOut = swap(
-            _pair2,
-            _token2,
-            _token1,
-            address(this),
-            tradeableAmount
-        );
-
-        require(amountOut > 0, "Trade Reverted, No Profit Made");
-    }
-
     function dualDexTrade(
-        address _pair1,
-        address _pair2,
+        address _router1,
+        address _router2,
         address _token1,
         address _token2,
         uint256 _amount
     ) external onlyOwner {
-        IERC20(_token1).transfer(_pair1, _amount);
-        uint256 tradeableAmount = swap(
-            _pair1,
-            _token1,
-            _token2,
-            _pair2,
-            _amount
-        );
+        uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
-        uint256 amountOut = swap(
-            _pair2,
-            _token2,
-            _token1,
-            address(this),
-            tradeableAmount
-        );
+        uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
+				IERC20(_token1).transfer(_router1, _amount);
+        swap(_router1, _token1, _token2, _router2, _amount);
+        uint256 token2Balance = IERC20(_token2).balanceOf(address(this));
+        uint256 tradeableAmount = token2Balance - token2InitialBalance;
 
-        require(amountOut > _amount, "Trade Reverted, No Profit Made");
+        swap(_router2, _token2, _token1, address(this), tradeableAmount);
+        uint256 endBalance = IERC20(_token1).balanceOf(address(this));
+        require(endBalance > startBalance, "Trade Reverted, No Profit Made");
     }
 
     function estimateTriDexTrade(
-        address _pair1,
-        address _pair2,
-        address _pair3,
+        address _router1,
+        address _router2,
+        address _router3,
         address _token1,
         address _token2,
         address _token3,
         uint256 _amount
     ) external view returns (uint256) {
-        uint256 amtBack1 = getAmountOutMin(_pair1, _token1, _token2, _amount);
+        uint256 amtBack1 = getAmountOutMin(_router1, _token1, _token2, _amount);
         uint256 amtBack2 = getAmountOutMin(
-            _pair2,
+            _router2,
             _token2,
             _token3,
             amtBack1
         );
         uint256 amtBack3 = getAmountOutMin(
-            _pair3,
+            _router3,
             _token3,
             _token1,
             amtBack2
@@ -383,69 +351,58 @@ contract Arb is Ownable {
     }
 
     function triDexTrade(
-        address _pair1,
-        address _pair2,
-        address _pair3,
+        address _router1,
+        address _router2,
+        address _router3,
         address _token1,
         address _token2,
         address _token3,
         uint256 _amount
     ) external onlyOwner {
-        IERC20(_token1).transfer(_pair1, _amount);
+        uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
-        uint256 tradeableAmount = swap(
-            _pair1,
-            _token1,
-            _token2,
-            _pair2,
-            _amount
-        );
+        uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
+				IERC20(_token1).transfer(_router1, _amount);
+        swap(_router1, _token1, _token2, _router2, _amount);
+        uint256 token2Balance = IERC20(_token2).balanceOf(address(this));
+        uint256 tradeableAmount = token2Balance - token2InitialBalance;
 
-        tradeableAmount = swap(
-            _pair2,
-            _token2,
-            _token3,
-            _pair3,
-            tradeableAmount
-        );
+        uint256 token3InitialBalance = IERC20(_token3).balanceOf(address(this));
+        swap(_router2, _token2, _token3, _router3, _amount);
+        uint256 token3Balance = IERC20(_token3).balanceOf(address(this));
+        tradeableAmount = token3Balance - token3InitialBalance;
 
-        uint256 amountOut = swap(
-            _pair3,
-            _token3,
-            _token1,
-            address(this),
-            tradeableAmount
-        );
-
-        require(amountOut > _amount, "Trade Reverted, No Profit Made");
+        swap(_router3, _token3, _token1, address(this), tradeableAmount);
+        uint256 endBalance = IERC20(_token1).balanceOf(address(this));
+        require(endBalance > startBalance, "Trade Reverted, No Profit Made");
     }
 
     function estimateTetraDexTrade(
-        address _pair1,
-        address _pair2,
-        address _pair3,
-        address _pair4,
+        address _router1,
+        address _router2,
+        address _router3,
+        address _router4,
         address _token1,
         address _token2,
         address _token3,
         address _token4,
         uint256 _amount
     ) external view returns (uint256) {
-        uint256 amtBack1 = getAmountOutMin(_pair1, _token1, _token2, _amount);
+        uint256 amtBack1 = getAmountOutMin(_router1, _token1, _token2, _amount);
         uint256 amtBack2 = getAmountOutMin(
-            _pair2,
+            _router2,
             _token2,
             _token3,
             amtBack1
         );
         uint256 amtBack3 = getAmountOutMin(
-            _pair3,
+            _router3,
             _token3,
             _token4,
             amtBack2
         );
         uint256 amtBack4 = getAmountOutMin(
-            _pair4,
+            _router4,
             _token4,
             _token1,
             amtBack3
@@ -454,50 +411,37 @@ contract Arb is Ownable {
     }
 
     function tetraDexTrade(
-        address _pair1,
-        address _pair2,
-        address _pair3,
-        address _pair4,
+        address _router1,
+        address _router2,
+        address _router3,
+        address _router4,
         address _token1,
         address _token2,
         address _token3,
         address _token4,
         uint256 _amount
     ) external onlyOwner {
-        IERC20(_token1).transfer(_pair1, _amount);
+        uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
-        uint256 tradeableAmount = swap(
-            _pair1,
-            _token1,
-            _token2,
-            _pair2,
-            _amount
-        );
+        uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
+				IERC20(_token1).transfer(_router1, _amount);
+        swap(_router1, _token1, _token2, _router2, _amount);
+        uint256 token2Balance = IERC20(_token2).balanceOf(address(this));
+        uint256 tradeableAmount = token2Balance - token2InitialBalance;
 
-        tradeableAmount = swap(
-            _pair2,
-            _token2,
-            _token3,
-            _pair3,
-            tradeableAmount
-        );
+        uint256 token3InitialBalance = IERC20(_token3).balanceOf(address(this));
+        swap(_router2, _token2, _token3, _router3, _amount);
+        uint256 token3Balance = IERC20(_token3).balanceOf(address(this));
+        tradeableAmount = token3Balance - token3InitialBalance;
 
-        tradeableAmount = swap(
-            _pair3,
-            _token3,
-            _token4,
-            _pair4,
-            tradeableAmount
-        );
+        uint256 token4InitialBalance = IERC20(_token4).balanceOf(address(this));
+        swap(_router3, _token3, _token4, _router4, _amount);
+        uint256 token4Balance = IERC20(_token4).balanceOf(address(this));
+        tradeableAmount = token4Balance - token4InitialBalance;
 
-        uint256 amountOut = swap(
-            _pair4,
-            _token4,
-            _token1,
-            address(this),
-            tradeableAmount
-        );
-        require(amountOut > _amount, "Trade Reverted, No Profit Made");
+        swap(_router4, _token4, _token1, address(this), tradeableAmount);
+        uint256 endBalance = IERC20(_token1).balanceOf(address(this));
+        require(endBalance > startBalance, "Trade Reverted, No Profit Made");
     }
 
     function getBalance(address _tokenContractAddress)
