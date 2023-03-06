@@ -1,4 +1,4 @@
-require('dotenv').config('.env.test');
+require('dotenv').config('.env');
 
 const prompt = require('prompt-sync')();
 const { CAKE_FACTORY_ABI, CAKE_ROUTER_ABI, CAKE_PAIR_ABI } = require('./abi');
@@ -7,16 +7,12 @@ const {
   MINIMUM_RESERVE_BNB,
   MINIMUM_RESERVE_BUSD,
   MINIMUM_RESERVE_USDT,
-  sendArbTx,
 } = require('./arbitrage');
 const {
   ZERO_ADDRESS,
   WBNB_ADDRESS,
   BUSD_ADDRESS,
   USDT_ADDRESS,
-  MAX_TRADE_SIZE,
-  CAKE_ROUTER_ADDRESS,
-  APE_ROUTER,
 } = require('./globals');
 const db = require('./token-store');
 const { Contract, web3 } = require('./web3-contract');
@@ -40,35 +36,40 @@ const addPair = async () => {
   quitOrRerun();
 };
 
-const addToken = async () => {
-  const token0 = web3.utils.toChecksumAddress(prompt('Enter token0: '));
-  // add wbnb, busd and usdt pair for all exchanges
-  const exchanges = await db.getExchanges();
-  if (!exchanges) {
-    console.log('Error in loading exchanges');
-    return;
+const addToken = async (token0) => {
+  try {
+    if (!token0)
+      token0 = web3.utils.toChecksumAddress(prompt('Enter token0: '));
+    // add wbnb, busd and usdt pair for all exchanges
+    const exchanges = await db.getExchanges();
+    if (!exchanges) {
+      console.log('Error in loading exchanges');
+      return;
+    }
+    for (let i = 0; i < exchanges.length; i++) {
+      const exchange = exchanges[i];
+      await Promise.all([
+        tryAddingPairs(WBNB_ADDRESS, token0, exchange, 'wbnb'),
+        tryAddingPairs(BUSD_ADDRESS, token0, exchange, 'busd'),
+        tryAddingPairs(USDT_ADDRESS, token0, exchange, 'usdt'),
+      ]);
+    }
+    quitOrRerun();
+  } catch (error) {
+    console.log(error.message);
   }
-  for (let i = 0; i < exchanges.length; i++) {
-    const exchange = exchanges[i];
-    await Promise.all([
-      tryAddingPairs(WBNB_ADDRESS, token0, exchange, 'wbnb'),
-      tryAddingPairs(BUSD_ADDRESS, token0, exchange, 'busd'),
-      tryAddingPairs(USDT_ADDRESS, token0, exchange, 'usdt'),
-    ]);
-  }
-  quitOrRerun();
 };
 
 const tryAddingPairs = async (token0, token1, exchange, label) => {
   const factory = new Contract(CAKE_FACTORY_ABI, exchange.factory);
   const pair = await factory.methods.getPair(token0, token1).call();
   if (pair === ZERO_ADDRESS) {
-    console.log(`There is no ${label} on ${exchange.name}`);
+    //console.log(`There is no ${label} on ${exchange.name}`);
     return false;
   }
   const oldPair = await db.getPair(pair);
   if (oldPair) {
-    console.log('pair exists');
+    //console.log('pair exists');
     return;
   }
 
@@ -82,7 +83,7 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveBNB =
         token0 === WBNB_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveBNB).lt(MINIMUM_RESERVE_BNB)) {
-        console.log(`There is not enough WBNB on ${exchange.name}`);
+        //console.log(`There is not enough WBNB on ${exchange.name}`);
         return;
       }
       break;
@@ -90,7 +91,7 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveBUSD =
         token0 === BUSD_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveBUSD).lt(MINIMUM_RESERVE_BUSD)) {
-        console.log(`There is not enough BUSD on ${exchange.name}`);
+        //console.log(`There is not enough BUSD on ${exchange.name}`);
         return;
       }
       break;
@@ -98,7 +99,7 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveUSDT =
         token0 === USDT_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveUSDT).lt(MINIMUM_RESERVE_USDT)) {
-        console.log(`There is not enough USDT on ${exchange.name}`);
+        //console.log(`There is not enough USDT on ${exchange.name}`);
         return;
       }
       break;
@@ -172,12 +173,13 @@ const addExchange = async () => {
 
 const testArbitrage = async () => {
   const token0 = prompt('Target token: ');
-  const testAmount = prompt('Order size: ')
+  const testAmount = prompt('Order size: ');
   await scanForOpportunity(token0, testAmount);
   quitOrRerun();
 };
 
 const quitOrRerun = () => {
+  return;
   console.log('Press y to continue. Press any key to quit');
   const option = prompt('');
   if (option && option.toLowerCase() === 'y') {
@@ -188,42 +190,10 @@ const quitOrRerun = () => {
   process.exit();
 };
 
-const main = async () => {
-  console.log(`
-  Welcome to setup!!!
-  
-  Options:
-  1: Add token
-  2: Remove token
-  3: Add pair
-  4: Add exchange
-  5: Test arbitrage
-  6: Test arbitrage tx
-  `);
-  const option = parseInt(prompt('Select an option: '));
-  switch (option) {
-    case 1:
-      await addToken();
-      break;
-    case 2:
-      await removeToken();
-      break;
-    case 3:
-      await addPair();
-      break;
-    case 4:
-      await addExchange();
-      break;
-    case 5:
-      await testArbitrage();
-      break;
-    case 6:
-      await testArbitrage();
-      break;
-    default:
-      console.log('Invalid option');
-      quitOrRerun();
-  }
+module.exports = {
+  addPair,
+  addToken,
+  removeToken,
+  addExchange,
+  quitOrRerun,
 };
-
-main();

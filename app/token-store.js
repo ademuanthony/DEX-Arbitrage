@@ -83,7 +83,7 @@ const getPair = async (pair_address) => {
 const getPairs = async (token) => {
   const addressExistsQuery = `SELECT * FROM pair WHERE lower(token0) = $1 or lower(token1) = $1;`;
   const result = await dbPool.query(addressExistsQuery, [token.toLowerCase()]);
-  if (result.rows.length === 0) return false;
+  if (result.rows.length === 0) return [];
   return result.rows;
 };
 

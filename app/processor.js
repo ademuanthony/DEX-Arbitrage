@@ -24,9 +24,9 @@ const decodeTransaction = async (web3, hash, testing) => {
     if (
       !tx ||
       !tx.to ||
-      !tx.input ||
-      tx.to !== CAKE_ROUTER_ADDRESS ||
-      (tx.blockNumber && !testing)
+      !tx.input || tx.input.length < 10//||
+      // tx.to !== CAKE_ROUTER_ADDRESS ||
+      // (tx.blockNumber && !testing)
     )
       return false;
     const fnSig = tx.input.substring(0, 10);
@@ -51,28 +51,28 @@ const decodeTransaction = async (web3, hash, testing) => {
       known: false,
     };
 
-    for (let ppt in knownTokens) {
-      if (ppt.toString().toLowerCase() === txData.token.toLowerCase()) {
-        txData.known = true;
-        txData.whitelisted = knownTokens[ppt].whitelisted;
-        txData.pairAddress = knownTokens[ppt].pairAddress;
-        break;
-      }
-    }
+    // for (let ppt in knownTokens) {
+    //   if (ppt.toString().toLowerCase() === txData.token.toLowerCase()) {
+    //     txData.known = true;
+    //     txData.whitelisted = knownTokens[ppt].whitelisted;
+    //     txData.pairAddress = knownTokens[ppt].pairAddress;
+    //     break;
+    //   }
+    // }
 
-    if (!txData.known) {
-      const info = await getTokenInfo(txData.token);
-      if (info) {
-        txData.known = true;
-        txData.pairAddress = info.pair_address;
-      } else {
-        txData.pairAddress = await CAKE_FACTORY.methods
-          .getPair(txData.token, WBNB_ADDRESS)
-          .call();
-      }
-    }
+    // if (!txData.known) {
+    //   const info = await getTokenInfo(txData.token);
+    //   if (info) {
+    //     txData.known = true;
+    //     txData.pairAddress = info.pair_address;
+    //   } else {
+    //     txData.pairAddress = await CAKE_FACTORY.methods
+    //       .getPair(txData.token, WBNB_ADDRESS)
+    //       .call();
+    //   }
+    // }
 
-    txData.isAnEnemy = await isAnEnemy(tx.from);
+    // txData.isAnEnemy = await isAnEnemy(tx.from);
 
     return txData;
   } catch (error) {

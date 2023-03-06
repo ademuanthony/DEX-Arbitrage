@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS pair (
   token0 character varying(126) not null,
   token1 character varying(126) not null,
   router character varying(126) not null,
-  label character varying(32) not null
+  label character varying(32) not null,
+  score int not null default 0
 );
 
 CREATE TABLE IF NOT EXISTS exchange (

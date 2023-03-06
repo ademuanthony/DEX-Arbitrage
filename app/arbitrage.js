@@ -28,14 +28,14 @@ const MINIMUM_RESERVE_BNB = web3.utils.toBN(web3.utils.toWei('4'));
 const MINIMUM_RESERVE_BUSD = web3.utils.toBN(web3.utils.toWei('250'));
 const MINIMUM_RESERVE_USDT = web3.utils.toBN(web3.utils.toWei('250'));
 
-const scanForOpportunity = async (token, amountIn) => {
+const scanForOpportunity = async (pairs, token, amountIn) => {
   try {
     const startTime = new Date();
-    const pairs = await db.getPairs(token);
-    if (!pairs) {
-      console.log('No pair found. Did you forget to add token?');
-      return;
-    }
+    // const pairs = await db.getPairs(token);
+    // if (!pairs) {
+    //   console.log('No pair found. Did you forget to add token?');
+    //   return;
+    // }
 
     let routeOptions = await Promise.all([
       build_WBNB_TKN_WBNB_route(pairs, token),
@@ -55,7 +55,7 @@ const scanForOpportunity = async (token, amountIn) => {
       }
     }
 
-    if(routes.length < 2) {
+    if (routes.length < 2) {
       return;
     }
 
@@ -116,9 +116,9 @@ const scanForOpportunity = async (token, amountIn) => {
     const grossProfit = bestAmount.sub(amountIn);
     if (grossProfit.lt(ethers.utils.parseEther('0.002'))) {
       console.log(
-        `No profitable trade found. Best Amount: ${ethers.utils.formatEther(
-          bestAmount
-        )}`
+        `No profitable trade found with ${ethers.utils.formatEther(
+          amountIn
+        )}. Best Amount: ${ethers.utils.formatEther(bestAmount)}`
       );
       return;
     }
@@ -158,7 +158,7 @@ const executeTrade = async (route, amount, expectedProfit) => {
           route[3],
           amount,
           {
-            gasLimit: 500000,
+            gasLimit: 260000,
           }
         );
       };
@@ -174,7 +174,7 @@ const executeTrade = async (route, amount, expectedProfit) => {
           route[5],
           amount,
           {
-            gasLimit: 500000,
+            gasLimit: 260000,
           }
         );
       };
@@ -192,7 +192,7 @@ const executeTrade = async (route, amount, expectedProfit) => {
           route[7],
           amount,
           {
-            gasLimit: 500000,
+            gasLimit: 260000,
           }
         );
       };
@@ -203,7 +203,7 @@ const executeTrade = async (route, amount, expectedProfit) => {
   }
 
   const tx = await fn();
-  console.log('Trade committed', tx.hash)
+  console.log('Trade committed', tx.hash);
   // await sendAndMonitorTx(tx, 'ARB');
   // console.log(
   //   `Trade completed! Amount in: ${ethers.utils.formatEther(

@@ -1,0 +1,56 @@
+{
+  "0x0f9e4d49f25de22c2202af916b681fbb3790497b":{
+    "address": "0x0f9e4d49f25de22c2202af916b681fbb3790497b",
+    "pairAddress": "0x044e9985C14A547D478b1e3d4a4E562e69c8f936",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0x03fF0ff224f904be3118461335064bB48Df47938":{
+    "address": "0x03fF0ff224f904be3118461335064bB48Df47938",
+    "pairAddress": "0xE8144BC1411e6393fa0976ce1EEe1BD1081A9d5c",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0x8263CD1601FE73C066bf49cc09841f35348e3be0":{
+    "address": "0x8263CD1601FE73C066bf49cc09841f35348e3be0",
+    "pairAddress": "0x3C7e7122f4DDcfC5b5c31b5c735Ce2Ae3b015856",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0x4a6D76C3a65f296468d7910c79f12Fdd5202A920": {
+    "address": "0x4a6D76C3a65f296468d7910c79f12Fdd5202A920",
+    "pairAddress": "0x3074b4Ca1188Fb21562B051ECcddA99E9BcC8CAf",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0xcD7C5025753a49f1881B31C48caA7C517Bb46308": {
+    "address": "0xcD7C5025753a49f1881B31C48caA7C517Bb46308",
+    "pairAddress": "0x547037D9d7AC11CB2740727A7f4CA41111D7E608",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0x0cBD6fAdcF8096cC9A43d90B45F65826102e3eCE": {
+    "address": "0x0cBD6fAdcF8096cC9A43d90B45F65826102e3eCE",
+    "pairAddress": "0x0c801128AC34D04Df1c16375c8C59A245a841568",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0xFfBa7529AC181c2Ee1844548e6D7061c9A597dF4": {
+    "address": "0xFfBa7529AC181c2Ee1844548e6D7061c9A597dF4",
+    "pairAddress": "0x9Bafeea2A8bC72b1910AB102ca5F8eCa6a67D929",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0x550D7984b7AdFfF88815E5528e12E322DF6D3B9B": {
+    "address": "0x550D7984b7AdFfF88815E5528e12E322DF6D3B9B",
+    "pairAddress": "0x81B13614E2adbfAc899E24099C2f102f4EA64788",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0x996c1bf72Ec220289ae0edd3a8d77080642121a2": {
+    "address": "0x996c1bf72Ec220289ae0edd3a8d77080642121a2",
+    "pairAddress": "0xBbba7668E7E36752F3eDfc0fF794FdDA090B7560",
+    "whitelisted": true,
+    "tested": true
+  }
+}

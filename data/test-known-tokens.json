@@ -1,0 +1,14 @@
+{
+  "0x996c1bf72Ec220289ae0edd3a8d77080642121a2": {
+    "address": "0x996c1bf72Ec220289ae0edd3a8d77080642121a2",
+    "pairAddress": "0xBbba7668E7E36752F3eDfc0fF794FdDA090B7560",
+    "whitelisted": true,
+    "tested": true
+  },
+  "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c": {
+    "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+    "pairAddress": "0x0187fFa6760855eC13B06F89410016f30B3018c3",
+    "whitelisted": true,
+    "tested": true
+  }
+}
