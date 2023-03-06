@@ -97,7 +97,7 @@ const main0 = async () => {
   web3.eth.subscribe('newPendingTransactions').on('data', async (txHash) => {
     // const startTime = new Date();
     const txData = await decodeTransaction(web3, txHash);
-    if (!txData) return;
+    if (!txData || !txData.known) return;
     const slippage = await getSlippage(txData);
     if (slippage > 1) return;
     runArb(txData.token, false);

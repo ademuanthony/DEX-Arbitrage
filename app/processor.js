@@ -24,7 +24,8 @@ const decodeTransaction = async (web3, hash, testing) => {
     if (
       !tx ||
       !tx.to ||
-      !tx.input || tx.input.length < 10//||
+      !tx.input ||
+      tx.input.length < 10 //||
       // tx.to !== CAKE_ROUTER_ADDRESS ||
       // (tx.blockNumber && !testing)
     )
@@ -60,17 +61,19 @@ const decodeTransaction = async (web3, hash, testing) => {
     //   }
     // }
 
-    // if (!txData.known) {
-    //   const info = await getTokenInfo(txData.token);
-    //   if (info) {
-    //     txData.known = true;
-    //     txData.pairAddress = info.pair_address;
-    //   } else {
-    //     txData.pairAddress = await CAKE_FACTORY.methods
-    //       .getPair(txData.token, WBNB_ADDRESS)
-    //       .call();
-    //   }
-    // }
+    if (!txData.known) {
+      const info = await getTokenInfo(txData.token);
+      if (info) {
+        txData.known = true;
+        txData.pairAddress = info.pair_address;
+        txData.whitelisted = info.whitelisted;
+      }
+      //  else {
+      //   txData.pairAddress = await CAKE_FACTORY.methods
+      //     .getPair(txData.token, WBNB_ADDRESS)
+      //     .call();
+      // }
+    }
 
     // txData.isAnEnemy = await isAnEnemy(tx.from);
 
@@ -122,7 +125,7 @@ const getSlippage = async (txData) => {
     }
   }
   return slippage;
-}
+};
 
 const checkProfitability = async (txData) => {
   const reserve = await getWBNBReserve(txData);
