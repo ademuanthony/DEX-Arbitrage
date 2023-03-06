@@ -6,6 +6,7 @@ const {
   decodeTransaction,
   checkProfitability,
   processTrade,
+  getSlippage,
 } = require('./app/processor');
 const db = require('./app/token-store');
 const { SandwichManager } = require('./app/sandwich-manager');
@@ -91,6 +92,8 @@ const main0 = async () => {
     // const startTime = new Date();
     const txData = await decodeTransaction(web3, txHash);
     if (!txData) return;
+    const slippage = await getSlippage(txData)
+    if (slippage > 0.5) return;
     runArb(txData.token, false);
   });
 };

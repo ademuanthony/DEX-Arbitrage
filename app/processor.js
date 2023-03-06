@@ -103,6 +103,27 @@ const getPair = (tokenA, tokenB) => {
   return pair;
 };
 
+const getSlippage = async (txData) => {
+  const reserve = await getWBNBReserve(txData);
+  const amountOut = getAmountOut(
+    txData.value,
+    reserve.reserveBNB,
+    reserve.reserveTkn
+  );
+  if (amountOut.lte(txData.amountOutMin)) return 0;
+  const diff = amountOut.sub(txData.amountOutMin);
+  let slippage = 5;
+  if (txData.amountOutMin.gt(bigZero)) {
+    if (diff.gt(bigZero)) {
+      const slippageBN = txData.amountOutMin.div(diff);
+      slippage = 100 / parseFloat(slippageBN.toString());
+    } else {
+      slippage = 0;
+    }
+  }
+  return slippage;
+}
+
 const checkProfitability = async (txData) => {
   const reserve = await getWBNBReserve(txData);
   const amountOut = getAmountOut(
@@ -273,4 +294,4 @@ const assertTradeSize = (
   });
 };
 
-module.exports = { decodeTransaction, checkProfitability };
+module.exports = { decodeTransaction, checkProfitability, getSlippage };
