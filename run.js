@@ -1,5 +1,4 @@
 require('dotenv').config();
-const crypto = require('crypto');
 const prompt = require('prompt-sync')();
 const { STANDARD_GAS_PRICE } = require('./app/globals');
 const logger = require('./app/logger');
@@ -55,9 +54,7 @@ const runArb = async (token, addTokensCalled) => {
   }
   if (!pairs || pairs.length === 0) return;
 
-  const randomArray = new Uint32Array(1);
-  crypto.getRandomValues(randomArray);
-  const amountIn = (randomArray[0] / (Math.pow(2, 32) - 1)) * 350 + 50;
+  const amountIn = (Math.floor(Math.random() * 351) + 50)/100;
 
   await scanForOpportunity(pairs, token, amountIn.toString());
 };
