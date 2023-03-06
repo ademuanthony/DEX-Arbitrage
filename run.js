@@ -44,6 +44,10 @@ const dumpTokenData = (tokenData) => {
   );
 };
 
+function rand(min, max){
+  return (Math.floor(Math.pow(10,14)*Math.random()*Math.random())%(max-min+1))+min;
+}
+
 const runArb = async (token, addTokensCalled) => {
   if (!token) return;
   const pairs = await db.getPairs(token.toString());
@@ -54,7 +58,7 @@ const runArb = async (token, addTokensCalled) => {
   }
   if (!pairs || pairs.length === 0) return;
 
-  const amountIn = (Math.floor(Math.random() * 351) + 50)/100;
+  const amountIn = rand(50, 400)/1000;
 
   await scanForOpportunity(pairs, token, amountIn.toString());
 };
