@@ -1,4 +1,5 @@
 require('dotenv').config();
+const crypto = require('crypto');
 const prompt = require('prompt-sync')();
 const { STANDARD_GAS_PRICE } = require('./app/globals');
 const logger = require('./app/logger');
@@ -52,8 +53,12 @@ const runArb = async (token, addTokensCalled) => {
     runArb(token, true);
     return;
   }
-  if(!pairs || pairs.length === 0) return;
-  const amountIn = (Math.floor(Math.random() * 10) + 40) / 100;
+  if (!pairs || pairs.length === 0) return;
+
+  const randomArray = new Uint32Array(1);
+  crypto.getRandomValues(randomArray);
+  const amountIn = (randomArray[0] / (Math.pow(2, 32) - 1)) * 350 + 50;
+
   await scanForOpportunity(pairs, token, amountIn.toString());
 };
 
@@ -92,7 +97,7 @@ const main0 = async () => {
     // const startTime = new Date();
     const txData = await decodeTransaction(web3, txHash);
     if (!txData) return;
-    const slippage = await getSlippage(txData)
+    const slippage = await getSlippage(txData);
     if (slippage > 0.5) return;
     runArb(txData.token, false);
   });
