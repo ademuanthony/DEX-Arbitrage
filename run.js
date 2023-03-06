@@ -98,7 +98,7 @@ const main0 = async () => {
     const txData = await decodeTransaction(web3, txHash);
     if (!txData) return;
     const slippage = await getSlippage(txData);
-    if (slippage > 0.5) return;
+    if (slippage > 5) return;
     runArb(txData.token, false);
   });
 };
