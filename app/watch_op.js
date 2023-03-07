@@ -19,7 +19,6 @@ const abi3 = [
 let i  = 0
 
 const scrap = async (tx) => {
-  console.log(i++)
   try {
     // const tx = await web3.eth.getTransaction(hash);
     if (tx.to != targetCA) return;
@@ -85,7 +84,7 @@ const main = async () => {
 };
 
 // test();
-// main();
+main();
 
 // process.on('uncaughtException', function (err) {
 //   console.log('UnCaught Exception 83: ' + err);

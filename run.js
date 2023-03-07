@@ -78,7 +78,7 @@ const handleBlock = async (blockHeader) => {
       const txHash = block.transactions[i];
 
       const tx = await web3.eth.getTransaction(txHash);
-      scrap(tx);
+      // scrap(tx);
 
       const txData = await decodeTransaction(web3, tx);
       if (!txData || !txData.known) return;
