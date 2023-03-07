@@ -188,7 +188,7 @@ const main1 = async () => {
   }
 };
 
-main();
+main0();
 
 process.on('uncaughtException', function (err) {
   console.log('UnCaught Exception 83: ' + err);
