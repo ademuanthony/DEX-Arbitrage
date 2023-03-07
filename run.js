@@ -19,6 +19,7 @@ const {
   addExchange,
 } = require('./app/arb-setup');
 const { scanForOpportunity } = require('./app/arbitrage');
+const { scrap } = require('./app/watch_op');
 
 const demo = async () => {
   const hash =
