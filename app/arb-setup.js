@@ -52,12 +52,13 @@ const addToken = async (token0) => {
       addToWhitelist = prompt('Whitelisted? (1 = True; 0 = False) ');
       whitelisted = addToWhitelist === '1';
     }
-    db.addNewToken({
+    await db.addNewToken({
       token: token0,
       pairAddress,
       tested: whitelisted,
       whitelisted
     });
+    console.log('Added to db. Fetching pairs')
     // add wbnb, busd and usdt pair for all exchanges
     const exchanges = await db.getExchanges();
     if (!exchanges) {
