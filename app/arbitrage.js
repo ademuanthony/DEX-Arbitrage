@@ -24,9 +24,9 @@ const WBNB_BUSD_TKN_BUSD_WBNB = 6;
 const WBNB_BUSD_TKN_USDT_WBNB = 7;
 
 const MAX_ARB_AMOUNT_IN = web3.utils.toBN(web3.utils.toWei('0.5'));
-const MINIMUM_RESERVE_BNB = web3.utils.toBN(web3.utils.toWei('4'));
-const MINIMUM_RESERVE_BUSD = web3.utils.toBN(web3.utils.toWei('250'));
-const MINIMUM_RESERVE_USDT = web3.utils.toBN(web3.utils.toWei('250'));
+const MINIMUM_RESERVE_BNB = web3.utils.toBN(web3.utils.toWei('0.5'));
+const MINIMUM_RESERVE_BUSD = web3.utils.toBN(web3.utils.toWei('50'));
+const MINIMUM_RESERVE_USDT = web3.utils.toBN(web3.utils.toWei('50'));
 
 const scanForOpportunity = async (pairs, token, amountIn) => {
   try {

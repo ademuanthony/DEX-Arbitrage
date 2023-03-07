@@ -34,10 +34,9 @@ const addPair = async () => {
   if (result) {
     console.log('Pair added successfully');
   }
-  quitOrRerun();
 };
 
-const addToken = async (token0) => {
+const addToken = async (token0,main) => {
   try {
     const manualAdding = !token0;
 
@@ -58,7 +57,7 @@ const addToken = async (token0) => {
       tested: whitelisted,
       whitelisted
     });
-    console.log('Added to db. Fetching pairs')
+    console.log('Added to db.')
     // add wbnb, busd and usdt pair for all exchanges
     const exchanges = await db.getExchanges();
     if (!exchanges) {
@@ -73,7 +72,6 @@ const addToken = async (token0) => {
         tryAddingPairs(USDT_ADDRESS, token0, exchange, 'usdt'),
       ]);
     }
-    quitOrRerun();
   } catch (error) {
     console.log(error.message);
   }
@@ -83,12 +81,12 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
   const factory = new Contract(CAKE_FACTORY_ABI, exchange.factory);
   const pair = await factory.methods.getPair(token0, token1).call();
   if (pair === ZERO_ADDRESS) {
-    //console.log(`There is no ${label} on ${exchange.name}`);
+    console.log(`There is no ${label} on ${exchange.name}`);
     return false;
   }
   const oldPair = await db.getPair(pair);
   if (oldPair) {
-    //console.log('pair exists');
+    console.log('pair exists');
     return;
   }
 
@@ -102,7 +100,7 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveBNB =
         token0 === WBNB_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveBNB).lt(MINIMUM_RESERVE_BNB)) {
-        //console.log(`There is not enough WBNB on ${exchange.name}`);
+        console.log(`There is not enough WBNB on ${exchange.name} ${web3.utils.fromWei(reserveBNB, 'ether')}`);
         return;
       }
       break;
@@ -110,7 +108,7 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveBUSD =
         token0 === BUSD_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveBUSD).lt(MINIMUM_RESERVE_BUSD)) {
-        //console.log(`There is not enough BUSD on ${exchange.name}`);
+        console.log(`There is not enough BUSD on ${exchange.name} ${web3.utils.fromWei(reserveBUSD, 'ether')}`);
         return;
       }
       break;
@@ -118,7 +116,7 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveUSDT =
         token0 === USDT_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveUSDT).lt(MINIMUM_RESERVE_USDT)) {
-        //console.log(`There is not enough USDT on ${exchange.name}`);
+        console.log(`There is not enough USDT on ${exchange.name} ${web3.utils.fromWei(reserveUSDT, 'ether')}`);
         return;
       }
       break;
@@ -143,10 +141,9 @@ const removeToken = async () => {
     return;
   }
   console.log(`${result.rowCount} Deleted`);
-  quitOrRerun();
 };
 
-const addExchange = async () => {
+const addExchange = async (main) => {
   try {
     const name = prompt('Exchange name: ');
     const website = prompt('Website: ');
@@ -187,26 +184,12 @@ const addExchange = async () => {
   } catch (error) {
     console.log(error.message);
   }
-  quitOrRerun();
 };
 
 const testArbitrage = async () => {
   const token0 = prompt('Target token: ');
   const testAmount = prompt('Order size: ');
   await scanForOpportunity(token0, testAmount);
-  quitOrRerun();
-};
-
-const quitOrRerun = () => {
-  return;
-  console.log('Press y to continue. Press any key to quit');
-  const option = prompt('');
-  if (option && option.toLowerCase() === 'y') {
-    main();
-    return;
-  }
-  console.log('goodbye...');
-  process.exit();
 };
 
 module.exports = {
@@ -214,5 +197,4 @@ module.exports = {
   addToken,
   removeToken,
   addExchange,
-  quitOrRerun,
 };

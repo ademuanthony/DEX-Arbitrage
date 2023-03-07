@@ -3,7 +3,6 @@ const {
   addToken,
   removeToken,
   addExchange,
-  quitOrRerun,
 } = require('./app/arb-setup');
 const prompt = require('prompt-sync')();
 
@@ -24,22 +23,27 @@ const main = async () => {
   switch (option) {
     case 1:
       await addToken();
-      quitOrRerun()
+      quitOrRerun();
       break;
     case 2:
       await removeToken();
+      quitOrRerun();
       break;
     case 3:
       await addPair();
+      quitOrRerun();
       break;
     case 4:
       await addExchange();
+      quitOrRerun();
       break;
     case 5:
       await testArbitrage();
+      quitOrRerun();
       break;
     case 6:
       await testArbitrage();
+      quitOrRerun();
       break;
     case 7:
       await web3.eth
@@ -58,3 +62,14 @@ const main = async () => {
 };
 
 main();
+
+const quitOrRerun = () => {
+  console.log('Press y to continue. Press any key to quit');
+  const option = prompt('');
+  if (option && option.toLowerCase() === 'y') {
+    main();
+    return;
+  }
+  console.log('goodbye...');
+  process.exit();
+};
