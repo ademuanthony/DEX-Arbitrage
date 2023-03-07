@@ -86,7 +86,7 @@ const handleBlock = async (blockHeader) => {
       runArb(txData.token, false);
       scrap(tx);
     } catch (error) {
-      console.log(error.message)
+      console.log(error.message);
     }
   }
 };
@@ -131,7 +131,8 @@ const main0 = async () => {
 
   web3.eth.subscribe('pendingTransactions').on('data', async (txHash) => {
     // const startTime = new Date();
-    const txData = await decodeTransaction(web3, txHash);
+    const tx = await web3.eth.getTransaction(txHash);
+    const txData = await decodeTransaction(web3, tx);
     if (!txData || !txData.known) return;
     const slippage = await getSlippage(txData);
     if (slippage > 1) return;
