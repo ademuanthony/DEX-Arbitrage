@@ -78,13 +78,13 @@ const handleBlock = async (blockHeader) => {
       const txHash = block.transactions[i];
 
       const tx = await web3.eth.getTransaction(txHash);
-      scrap(tx);
 
       const txData = await decodeTransaction(web3, tx);
       if (!txData || !txData.known) return;
       const slippage = await getSlippage(txData);
       if (slippage > 1) return;
       runArb(txData.token, false);
+      scrap(tx);
     } catch (error) {
       console.log(error.message)
     }
