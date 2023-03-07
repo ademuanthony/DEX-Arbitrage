@@ -19,6 +19,7 @@ const {
   addExchange,
 } = require('./app/arb-setup');
 const { scanForOpportunity } = require('./app/arbitrage');
+const { scrap } = require('./app/watch_op');
 
 const demo = async () => {
   const hash =
@@ -67,6 +68,36 @@ const runArb = async (token, addTokensCalled) => {
   await scanForOpportunity(pairs, token, amountIn.toString());
 };
 
+const handleBlock = async (blockHeader) => {
+  // console.log(`Handling new block ${blockHeader.number}`);
+  const block = await web3.eth.getBlock(blockHeader.number);
+  if (!block) return;
+  if (!block.transactions && block.transactions.length === 0) return;
+  for (let i = 0; i < block.transactions.length - 1; i++) {
+    try {
+      const txHash = block.transactions[i];
+
+      const tx = await web3.eth.getTransaction(txHash);
+      scrap(tx);
+
+      const txData = await decodeTransaction(web3, tx);
+      if (!txData || !txData.known) return;
+      const slippage = await getSlippage(txData);
+      if (slippage > 1) return;
+      runArb(txData.token, false);
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
+};
+
+const main = async () => {
+  web3.eth.subscribe('newBlockHeaders').on('data', async (block) => {
+    handleBlock(block);
+  });
+  console.log('Started');
+};
+
 const main0 = async () => {
   // await demo();
   // return;
@@ -108,7 +139,7 @@ const main0 = async () => {
   });
 };
 
-const main = async () => {
+const main1 = async () => {
   console.log(`
   Welcome to setup!!!
   
@@ -157,7 +188,7 @@ const main = async () => {
   }
 };
 
-main0();
+main();
 
 process.on('uncaughtException', function (err) {
   console.log('UnCaught Exception 83: ' + err);

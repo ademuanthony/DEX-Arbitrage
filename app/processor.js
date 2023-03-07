@@ -18,9 +18,9 @@ const { getTokenInfo, isAnEnemy } = require('./token-store');
 
 const bigZero = web3.utils.toBN(0);
 
-const decodeTransaction = async (web3, hash, testing) => {
+const decodeTransaction = async (web3, tx, testing) => {
   try {
-    const tx = await web3.eth.getTransaction(hash);
+    
     if (
       !tx ||
       !tx.to ||

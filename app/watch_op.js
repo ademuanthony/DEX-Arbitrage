@@ -8,9 +8,7 @@ const targetCA = '0x0000000000008AfdAcc486225455281F614843e7';
 
 // address tokenIn, address tokenOut, address lpIn, address lpOut
 
-const abi = [
-  { internalType: 'address', name: 'token', type: 'address' },
-];
+const abi = [{ internalType: 'address', name: 'token', type: 'address' }];
 
 const abi3 = [
   { internalType: 'address', name: 'token0', type: 'address' },
@@ -18,11 +16,17 @@ const abi3 = [
   // { internalType: 'address', name: 'token1', type: 'address' },
 ];
 
-const scrap = async (hash) => {
+const scrap = async (tx) => {
   try {
-    const tx = await web3.eth.getTransaction(hash);
+    // const tx = await web3.eth.getTransaction(hash);
     if (tx.to != targetCA) return;
-    if (!tx || !tx.to || !tx.input || tx.input.length <= 10 || tx.to != targetCA)
+    if (
+      !tx ||
+      !tx.to ||
+      !tx.input ||
+      tx.input.length <= 10 ||
+      tx.to != targetCA
+    )
       return false;
     const fnSig = tx.input.substring(0, 10);
     if (fnSig !== methodId && fnSig !== method3Id) return;
@@ -78,14 +82,16 @@ const main = async () => {
 };
 
 // test();
-main();
+// main();
 
-process.on('uncaughtException', function (err) {
-  console.log('UnCaught Exception 83: ' + err);
-  console.error(err.stack);
-  fs.appendFile('./critical.txt', err.stack, function () {});
-});
+// process.on('uncaughtException', function (err) {
+//   console.log('UnCaught Exception 83: ' + err);
+//   console.error(err.stack);
+//   fs.appendFile('./critical.txt', err.stack, function () {});
+// });
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: ' + p + ' - reason: ' + reason);
-});
+// process.on('unhandledRejection', (reason, p) => {
+//   console.log('Unhandled Rejection at: ' + p + ' - reason: ' + reason);
+// });
+
+module.exports = { scrap };
