@@ -19,7 +19,6 @@ const {
   addExchange,
 } = require('./app/arb-setup');
 const { scanForOpportunity } = require('./app/arbitrage');
-const { scrap } = require('./app/watch_op');
 
 const demo = async () => {
   const hash =
@@ -84,7 +83,7 @@ const handleBlock = async (blockHeader) => {
       const slippage = await getSlippage(txData);
       if (slippage > 1) return;
       runArb(txData.token, false);
-      scrap(tx);
+      // scrap(tx);
     } catch (error) {
       console.log(error.message);
     }
