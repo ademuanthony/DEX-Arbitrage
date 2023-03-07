@@ -14,7 +14,7 @@ const {
   BUSD_ADDRESS,
   USDT_ADDRESS,
   TRIGGER_ADDRESS,
-  BABY_DOGE_SWAP_ROUTER
+  BABY_DOGE_SWAP_ROUTER,
 } = process.env;
 
 var CAKE_ROUTER = new Contract(CAKE_ROUTER_ABI, CAKE_ROUTER_ADDRESS);
@@ -35,6 +35,17 @@ const addLiquidityETH = '0xf305d719';
 const swapTokensForExactETH = '0x4a25d94a';
 const swapTokensForExactTokens = '0x8803dbee';
 const addLiquidity = '0xe8e33700';
+
+const isUniswapTrade = (method) => {
+  return (
+    method === swapExactTokensForETH ||
+    method === swapETHForExactTokens ||
+    method == swapExactETHForTokens ||
+    method === swapExactTokensForTokens ||
+    method === swapTokensForExactETH ||
+    method === swapTokensForExactTokens
+  );
+};
 
 const MAX_TRADE_SIZE = web3.utils.toBN(web3.utils.toWei('0.05'));
 const MIN_GROSS_PROFIT = '0.0045';
@@ -71,5 +82,6 @@ module.exports = {
   MIN_GROSS_PROFIT,
   GAS_MULTIPLIER,
   STANDARD_GAS_PRICE,
+  isUniswapTrade,
   sleep,
 };
