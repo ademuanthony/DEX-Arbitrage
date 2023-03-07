@@ -82,7 +82,7 @@ const handleBlock = async (blockHeader) => {
       if (!txData || !txData.known) return;
       const slippage = await getSlippage(txData);
       if (slippage > 1) return;
-      runArb(txData.token, false);
+      await runArb(txData.token, false);
       // scrap(tx);
     } catch (error) {
       console.log(error.message);
@@ -188,7 +188,7 @@ const main1 = async () => {
   }
 };
 
-main0();
+main();
 
 process.on('uncaughtException', function (err) {
   console.log('UnCaught Exception 83: ' + err);
