@@ -14,7 +14,7 @@ const addNewToken = async (txData) => {
     insert into known_token (address, pair_address, tested, whitelisted) values($1, $2, $3, $4) RETURNING *
   `;
 
-    const values = [txData.token, txData.pairAddress, false, false];
+    const values = [txData.token, txData.pairAddress, txData.tested|false, txData.whitelisted|false];
 
     return await dbPool.query(insertStatement, values);
   } catch (err) {

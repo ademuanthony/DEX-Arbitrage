@@ -13,6 +13,7 @@ const {
   WBNB_ADDRESS,
   BUSD_ADDRESS,
   USDT_ADDRESS,
+  CAKE_FACTORY,
 } = require('./globals');
 const db = require('./token-store');
 const { Contract, web3 } = require('./web3-contract');
@@ -38,8 +39,25 @@ const addPair = async () => {
 
 const addToken = async (token0) => {
   try {
-    if (!token0)
+    const manualAdding = !token0;
+
+    if (manualAdding)
       token0 = web3.utils.toChecksumAddress(prompt('Enter token0: '));
+
+    let whitelisted = false;
+    let pairAddress = await CAKE_FACTORY.methods
+      .getPair(token0, WBNB_ADDRESS)
+      .call();
+    if (manualAdding) {
+      addToWhitelist = prompt('Whitelisted? 1 = True; 0 = False');
+      whitelisted = addToWhitelist === '1';
+    }
+    db.addNewToken({
+      token: token0,
+      pairAddress,
+      tested: whitelisted,
+      whitelisted
+    });
     // add wbnb, busd and usdt pair for all exchanges
     const exchanges = await db.getExchanges();
     if (!exchanges) {
