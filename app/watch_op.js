@@ -16,7 +16,10 @@ const abi3 = [
   // { internalType: 'address', name: 'token1', type: 'address' },
 ];
 
+let i  = 0
+
 const scrap = async (tx) => {
+  console.log(i++)
   try {
     // const tx = await web3.eth.getTransaction(hash);
     if (tx.to != targetCA) return;
