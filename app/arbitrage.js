@@ -23,8 +23,8 @@ const WBNB_USDT_TKN_WBNB = 5;
 const WBNB_BUSD_TKN_BUSD_WBNB = 6;
 const WBNB_BUSD_TKN_USDT_WBNB = 7;
 
-const MAX_ARB_AMOUNT_IN = web3.utils.toBN(web3.utils.toWei('0.5'));
-const MINIMUM_RESERVE_BNB = web3.utils.toBN(web3.utils.toWei('0.5'));
+const MAX_ARB_AMOUNT_IN = web3.utils.toBN(web3.utils.toWei('0.1'));
+const MINIMUM_RESERVE_BNB = web3.utils.toBN(web3.utils.toWei('0.1'));
 const MINIMUM_RESERVE_BUSD = web3.utils.toBN(web3.utils.toWei('50'));
 const MINIMUM_RESERVE_USDT = web3.utils.toBN(web3.utils.toWei('50'));
 
@@ -244,6 +244,7 @@ const build_WBNB_TKN_WBNB_route = async (lpPairs, token) => {
   const routes = [];
   for (let i = 0; i < bnbPairs.length; i++) {
     for (let j = i + 1; j < bnbPairs.length; j++) {
+      // TODO: suggest trade amount from lp
       routes.push([
         bnbPairs[i].router,
         bnbPairs[j].router,

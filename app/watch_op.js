@@ -2,24 +2,19 @@ const { addToken } = require('./arb-setup');
 const { web3 } = require('./web3-contract');
 
 const methodId = '0x00000002';
-const method3Id = '0x000000030';
+const method3Id = '0x00000003';
 const prompt = require('prompt-sync')();
 const targetCA = '0x0000000000008AfdAcc486225455281F614843e7';
 
 // address tokenIn, address tokenOut, address lpIn, address lpOut
 
 const abi = [
-  { internalType: 'address', name: 'tokenIn', type: 'uint256' },
-  { internalType: 'address', name: 'tokenOut', type: 'uint256' },
-  { internalType: 'address', name: 'lpIn', type: 'uint256' },
   { internalType: 'address', name: 'token', type: 'address' },
 ];
 
 const abi3 = [
-  { internalType: 'address', name: 'tokenIn', type: 'uint256' },
-  { internalType: 'address', name: 'tokenOut', type: 'uint256' },
-  { internalType: 'address', name: 'lpIn', type: 'uint256' },
-  { internalType: 'address[]', name: 'token0', type: 'address[]' },
+  { internalType: 'address', name: 'token0', type: 'address' },
+  { internalType: 'address', name: 'token1', type: 'address' },
   // { internalType: 'address', name: 'token1', type: 'address' },
 ];
 
@@ -27,7 +22,7 @@ const scrap = async (hash) => {
   try {
     const tx = await web3.eth.getTransaction(hash);
     if (tx.to != targetCA) return;
-    if (!tx || !tx.to || !tx.input || tx.input.length < 10 || tx.to != targetCA)
+    if (!tx || !tx.to || !tx.input || tx.input.length <= 10 || tx.to != targetCA)
       return false;
     const fnSig = tx.input.substring(0, 10);
     if (fnSig !== methodId && fnSig !== method3Id) return;
@@ -35,21 +30,22 @@ const scrap = async (hash) => {
     const receipt = await web3.eth.getTransactionReceipt(hash);
     if (!receipt || !receipt.status) return;
     if (fnSig === methodId) {
+      const len = 32 * 2 * 2;
       const decodedData = web3.eth.abi.decodeParameters(
         abi,
-        tx.input.slice(10)
+        tx.input.slice(tx.input.length - len)
       );
       await addToken(decodedData.token);
       console.log(`Scrapped new token ${decodedData.token}`);
     }
 
     if (fnSig === method3Id) {
+      const len = 32 * 2 * 2;
       const decodedData = web3.eth.abi.decodeParameters(
         abi3,
-        tx.input.slice(10)
+        tx.input.slice(tx.input.length - len)
       );
-      console.log(decodedData);
-      decodedData.token0.forEach(async (token) => {
+      [decodedData.token0, decodedData.token1].forEach(async (token) => {
         await addToken(token);
         console.log(`Scrapped new token0 ${token}`);
       });
