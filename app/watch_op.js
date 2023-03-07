@@ -24,29 +24,38 @@ const abi3 = [
 ];
 
 const scrap = async (hash) => {
-  const tx = await web3.eth.getTransaction(hash);
-  if (tx.to != targetCA) return;
-  if (!tx || !tx.to || !tx.input || tx.input.length < 10 || tx.to != targetCA)
-    return false;
-  const fnSig = tx.input.substring(0, 10);
-  if (fnSig !== methodId && fnSig !== method3Id) return;
-  const receipt = await web3.eth.getTransactionReceipt(hash);
-  if (!receipt || !receipt.status) return;
-  if (fnSig === methodId) {
-    const decodedData = web3.eth.abi.decodeParameters(abi, tx.input.slice(10));
-    await addToken(decodedData.token);
-    console.log(`Scrapped new token ${decodedData.token}`);
+  try {
+    const tx = await web3.eth.getTransaction(hash);
+    if (tx.to != targetCA) return;
+    if (!tx || !tx.to || !tx.input || tx.input.length < 10 || tx.to != targetCA)
+      return false;
+    const fnSig = tx.input.substring(0, 10);
+    if (fnSig !== methodId /*&& fnSig !== method3Id*/) return;
+    const receipt = await web3.eth.getTransactionReceipt(hash);
+    if (!receipt || !receipt.status) return;
+    if (fnSig === methodId) {
+      const decodedData = web3.eth.abi.decodeParameters(
+        abi,
+        tx.input.slice(10)
+      );
+      await addToken(decodedData.token);
+      console.log(`Scrapped new token ${decodedData.token}`);
+    }
+
+    if (fnSig === method3Id) {
+      const decodedData = web3.eth.abi.decodeParameters(
+        abi3,
+        tx.input.slice(10)
+      );
+      await addToken(decodedData.token0);
+      console.log(`Scrapped new token0 ${decodedData.token0}`);
+
+      await addToken(decodedData.token1);
+      console.log(`Scrapped new token1 ${decodedData.token1}`);
+    }
+  } catch (error) {
+    console.log('hash failed', hash, error.message);
   }
-
-  if (fnSig === method3Id) {
-    const decodedData = web3.eth.abi.decodeParameters(abi3, tx.input.slice(10));
-    await addToken(decodedData.token0);
-    console.log(`Scrapped new token0 ${decodedData.token0}`);
-
-    await addToken(decodedData.token1);
-    console.log(`Scrapped new token1 ${decodedData.token1}`);
-  }
-
 };
 
 const handleBlock = async (blockHeader) => {
