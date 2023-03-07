@@ -49,7 +49,7 @@ const addToken = async (token0) => {
       .getPair(token0, WBNB_ADDRESS)
       .call();
     if (manualAdding) {
-      addToWhitelist = prompt('Whitelisted? 1 = True; 0 = False');
+      addToWhitelist = prompt('Whitelisted? (1 = True; 0 = False) ');
       whitelisted = addToWhitelist === '1';
     }
     db.addNewToken({

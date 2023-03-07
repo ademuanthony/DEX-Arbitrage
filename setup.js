@@ -24,6 +24,7 @@ const main = async () => {
   switch (option) {
     case 1:
       await addToken();
+      quitOrRerun()
       break;
     case 2:
       await removeToken();
