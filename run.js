@@ -44,8 +44,12 @@ const dumpTokenData = (tokenData) => {
   );
 };
 
-function rand(min, max){
-  return (Math.floor(Math.pow(10,14)*Math.random()*Math.random())%(max-min+1))+min;
+function rand(min, max) {
+  return (
+    (Math.floor(Math.pow(10, 14) * Math.random() * Math.random()) %
+      (max - min + 1)) +
+    min
+  );
 }
 
 const runArb = async (token, addTokensCalled) => {
@@ -58,7 +62,7 @@ const runArb = async (token, addTokensCalled) => {
   }
   if (!pairs || pairs.length === 0) return;
 
-  const amountIn = rand(50, 200)/1000;
+  const amountIn = rand(50, 200) / 1000;
 
   await scanForOpportunity(pairs, token, amountIn.toString());
 };
@@ -98,6 +102,7 @@ const main0 = async () => {
     // const startTime = new Date();
     const txData = await decodeTransaction(web3, txHash);
     if (!txData || !txData.known) return;
+    console.log(txData);
     const slippage = await getSlippage(txData);
     if (slippage > 1) return;
     runArb(txData.token, false);
