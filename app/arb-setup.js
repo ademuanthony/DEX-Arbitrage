@@ -36,7 +36,7 @@ const addPair = async () => {
   }
 };
 
-const addToken = async (token0, main) => {
+const addToken = async (token0) => {
   try {
     const manualAdding = !token0;
 

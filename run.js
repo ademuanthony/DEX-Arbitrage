@@ -98,7 +98,7 @@ const main0 = async () => {
   //   }
   // });
 
-  web3.eth.subscribe('newPendingTransactions').on('data', async (txHash) => {
+  web3.eth.subscribe('pendingTransactions').on('data', async (txHash) => {
     // const startTime = new Date();
     const txData = await decodeTransaction(web3, txHash);
     if (!txData || !txData.known) return;
@@ -159,12 +159,12 @@ const main = async () => {
 
 main0();
 
-// process.on('uncaughtException', function (err) {
-//   console.log('UnCaught Exception 83: ' + err);
-//   console.error(err.stack);
-//   fs.appendFile('./critical.txt', err.stack, function () {});
-// });
+process.on('uncaughtException', function (err) {
+  console.log('UnCaught Exception 83: ' + err);
+  console.error(err.stack);
+  fs.appendFile('./critical.txt', err.stack, function () {});
+});
 
-// process.on('unhandledRejection', (reason, p) => {
-//   console.log('Unhandled Rejection at: ' + p + ' - reason: ' + reason);
-// });
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at: ' + p + ' - reason: ' + reason);
+});
