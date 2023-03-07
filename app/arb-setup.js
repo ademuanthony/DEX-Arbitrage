@@ -36,7 +36,7 @@ const addPair = async () => {
   }
 };
 
-const addToken = async (token0,main) => {
+const addToken = async (token0, main) => {
   try {
     const manualAdding = !token0;
 
@@ -55,9 +55,9 @@ const addToken = async (token0,main) => {
       token: token0,
       pairAddress,
       tested: whitelisted,
-      whitelisted
+      whitelisted,
     });
-    console.log('Added to db.')
+    console.log('Added to db.');
     // add wbnb, busd and usdt pair for all exchanges
     const exchanges = await db.getExchanges();
     if (!exchanges) {
@@ -100,7 +100,12 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveBNB =
         token0 === WBNB_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveBNB).lt(MINIMUM_RESERVE_BNB)) {
-        console.log(`There is not enough WBNB on ${exchange.name} ${web3.utils.fromWei(reserveBNB, 'ether')}`);
+        console.log(
+          `There is not enough WBNB on ${exchange.name} ${web3.utils.fromWei(
+            reserveBNB,
+            'ether'
+          )}`
+        );
         return;
       }
       break;
@@ -108,7 +113,12 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveBUSD =
         token0 === BUSD_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveBUSD).lt(MINIMUM_RESERVE_BUSD)) {
-        console.log(`There is not enough BUSD on ${exchange.name} ${web3.utils.fromWei(reserveBUSD, 'ether')}`);
+        console.log(
+          `There is not enough BUSD on ${exchange.name} ${web3.utils.fromWei(
+            reserveBUSD,
+            'ether'
+          )}`
+        );
         return;
       }
       break;
@@ -116,7 +126,12 @@ const tryAddingPairs = async (token0, token1, exchange, label) => {
       const reserveUSDT =
         token0 === USDT_ADDRESS ? reserve.reserve0 : reserve.reserve1;
       if (web3.utils.toBN(reserveUSDT).lt(MINIMUM_RESERVE_USDT)) {
-        console.log(`There is not enough USDT on ${exchange.name} ${web3.utils.fromWei(reserveUSDT, 'ether')}`);
+        console.log(
+          `There is not enough USDT on ${exchange.name} ${web3.utils.fromWei(
+            reserveUSDT,
+            'ether'
+          )}`
+        );
         return;
       }
       break;
@@ -188,8 +203,14 @@ const addExchange = async (main) => {
 
 const testArbitrage = async () => {
   const token0 = prompt('Target token: ');
+  const pairs = await db.getPairs(token0.toString());
+  if (pairs.length === 0) {
+    console.log('pairs not found');
+    return;
+  }
   const testAmount = prompt('Order size: ');
-  await scanForOpportunity(token0, testAmount);
+
+  await scanForOpportunity(pairs, token0, testAmount);
 };
 
 module.exports = {
@@ -197,4 +218,5 @@ module.exports = {
   addToken,
   removeToken,
   addExchange,
+  testArbitrage,
 };

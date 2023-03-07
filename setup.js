@@ -3,6 +3,7 @@ const {
   addToken,
   removeToken,
   addExchange,
+  testArbitrage,
 } = require('./app/arb-setup');
 const prompt = require('prompt-sync')();
 

@@ -102,7 +102,6 @@ const main0 = async () => {
     // const startTime = new Date();
     const txData = await decodeTransaction(web3, txHash);
     if (!txData || !txData.known) return;
-    console.log(txData);
     const slippage = await getSlippage(txData);
     if (slippage > 1) return;
     runArb(txData.token, false);
