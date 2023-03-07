@@ -43,7 +43,7 @@ const addToken = async (token0) => {
     if (manualAdding)
       token0 = web3.utils.toChecksumAddress(prompt('Enter token0: '));
 
-    let whitelisted = false;
+    let whitelisted = true;
     let pairAddress = await CAKE_FACTORY.methods
       .getPair(token0, WBNB_ADDRESS)
       .call();
