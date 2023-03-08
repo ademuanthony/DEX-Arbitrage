@@ -115,7 +115,7 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
     }
 
     const grossProfit = bestAmount.sub(amountIn);
-    if (grossProfit.lt(ethers.utils.parseEther('0.002'))) {
+    if (grossProfit.lt(ethers.utils.parseEther(process.env.MINIMUM_PROFIT))) {
       // 0.0036
       if (parseInt(grossProfit) > 0) {
         console.log(
