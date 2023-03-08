@@ -194,7 +194,7 @@ const executeTrade = async (route, amount, expectedProfit) => {
             route[5],
             amount,
             {
-              gasLimit: 260000,
+              gasLimit: 300000,
             }
           );
         };
@@ -212,7 +212,7 @@ const executeTrade = async (route, amount, expectedProfit) => {
             route[7],
             amount,
             {
-              gasLimit: 260000,
+              gasLimit: 360000,
             }
           );
         };
