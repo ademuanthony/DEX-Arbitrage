@@ -204,37 +204,6 @@ const executeTrade = async (route, amount, expectedProfit) => {
 
   const tx = await fn();
   console.log('Trade committed', tx.hash);
-  // await sendAndMonitorTx(tx, 'ARB');
-  // console.log(
-  //   `Trade completed! Amount in: ${ethers.utils.formatEther(
-  //     amount
-  //   )} - Potential profit: ${ethers.utils.formatEther(expectedProfit)}`
-  // );
-};
-
-const sendAndMonitorTx = async (tx, pptLabel) => {
-  const wallet = web3.eth.accounts.wallet.add(process.env.privateKey);
-  const [gasCost, nonce] = await Promise.all([
-    tx.estimateGas({ from: wallet.address }),
-    web3.eth.getTransactionCount(wallet.address),
-  ]);
-  const backData = tx.encodeABI();
-  const backTxData = {
-    from: wallet,
-    to: TRIGGER_ADDRESS,
-    data: backData,
-    gas: gasCost,
-    gasPrice: STANDARD_GAS_PRICE,
-    // nonce: nonce + 1,
-  };
-  return web3.eth.sendTransaction(backTxData, (error, hash) => {
-    if (error) {
-      logger.error(error.message);
-      return;
-    }
-    logger.info(`${pptLabel} tx sent [${hash}]`);
-    // this.monitorTx(hash, pptLabel);
-  });
 };
 
 const build_WBNB_TKN_WBNB_route = async (lpPairs, token) => {

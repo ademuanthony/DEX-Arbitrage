@@ -8,6 +8,20 @@ const getTokenInfo = async (tokenAddress) => {
   return userExists.rows[0];
 };
 
+const getTokenInfoByPairAddress = async (pairAddress) => {
+  const addressExistsQuery = `SELECT * FROM known_token WHERE pair_address = $1;`;
+  const userExists = await dbPool.query(addressExistsQuery, [pairAddress]);
+  if (userExists.rows.length === 0) return false;
+  return userExists.rows[0];
+};
+
+const getTokens = async () => {
+  const addressExistsQuery = `SELECT * FROM known_token;`;
+  const userExists = await dbPool.query(addressExistsQuery);
+  if (userExists.rows.length === 0) return false;
+  return userExists.rows;
+};
+
 const addNewToken = async (txData) => {
   try {
     const insertStatement = `
@@ -123,6 +137,8 @@ const removePairs = async (token) => {
 module.exports = {
   addNewToken,
   getTokenInfo,
+  getTokenInfoByPairAddress,
+  getTokens,
   addEnemy,
   isAnEnemy,
   addExchange,

@@ -21,7 +21,7 @@ let i  = 0
 const scrap = async (tx) => {
   try {
     // const tx = await web3.eth.getTransaction(hash);
-    if (tx.to != targetCA) return;
+    if (!tx || tx.to != targetCA) return;
     if (
       !tx ||
       !tx.to ||

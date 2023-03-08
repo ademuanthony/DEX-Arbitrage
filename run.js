@@ -53,49 +53,54 @@ function rand(min, max) {
   );
 }
 
-const runArb = async (token, addTokensCalled) => {
-  if (!token) return;
-  const pairs = await db.getPairs(token.toString());
+const runArb = async (tokenAddress, addTokensCalled) => {
+  if (!tokenAddress) return;
+  console.log(`Handling ${tokenAddress}`);
+  const pairs = await db.getPairs(tokenAddress.toString());
   if ((!pairs || pairs.length === 0) && !addTokensCalled) {
-    await addToken(token);
-    runArb(token, true);
+    await addToken(tokenAddress);
+    runArb(tokenAddress, true);
     return;
   }
   if (!pairs || pairs.length === 0) return;
 
   const amountIn = rand(50, 200) / 1000;
 
-  await scanForOpportunity(pairs, token, amountIn.toString());
+  await scanForOpportunity(pairs, tokenAddress, amountIn.toString());
 };
 
-const handleBlock = async (blockHeader) => {
-  // console.log(`Handling new block ${blockHeader.number}`);
-  const block = await web3.eth.getBlock(blockHeader.number);
-  if (!block) return;
-  if (!block.transactions && block.transactions.length === 0) return;
-  for (let i = 0; i < block.transactions.length - 1; i++) {
-    try {
-      const txHash = block.transactions[i];
+const main = () => {
+  const swapEventTopic =
+    '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822';
+  const scrapTarget =
+    '0x0000000000000000000000000000000000008AfdAcc486225455281F614843e7';
+  const logOptions = {
+    // Filter transfer topics
+    topics: [swapEventTopic],
+  };
 
-      const tx = await web3.eth.getTransaction(txHash);
-      // scrap(tx);
+  const basePairs = [
+    '0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16',
+    '0x16b9a82891338f9bA80E2D6970FddA79D1eb0daE',
+    '0x7EFaEf62fDdCCa950418312c6C91Aef321375A00',
+    '0x2354ef4DF11afacb85a5C7f98B624072ECcddbB1',
+    '0xd99c7F6C65857AC913a8f880A4cb84032AB2FC5b',
+  ];
 
-      const txData = await decodeTransaction(web3, tx);
-      if (!txData || !txData.known) return;
-      const slippage = await getSlippage(txData);
-      if (slippage > 1) return;
-      runArb(txData.token, false);
-    } catch (error) {
-      console.log(error.message);
+  let subscription = web3.eth.subscribe('logs', logOptions);
+
+  subscription.on('data', async (event) => {
+    if (basePairs.indexOf(event.address) >= 0) return;
+    const token = await db.getTokenInfoByPairAddress(event.address);
+    if (!token) {
+      if (event.topics.indexOf(scrapTarget)) {
+        const tx = await web3.eth.getTransaction(event.transactionHash);
+        scrap(tx);
+      }
+      return;
     }
-  }
-};
-
-const main = async () => {
-  web3.eth.subscribe('newBlockHeaders').on('data', async (block) => {
-    handleBlock(block);
+    runArb(token.address);
   });
-  console.log('Started');
 };
 
 const main0 = async () => {
@@ -131,62 +136,12 @@ const main0 = async () => {
 
   web3.eth.subscribe('pendingTransactions').on('data', async (txHash) => {
     // const startTime = new Date();
-    const tx = await web3.eth.getTransaction(txHash);
-    const txData = await decodeTransaction(web3, tx);
+    const txData = await decodeTransaction(web3, txHash);
     if (!txData || !txData.known) return;
     const slippage = await getSlippage(txData);
     if (slippage > 1) return;
     runArb(txData.token, false);
   });
-};
-
-const main1 = async () => {
-  console.log(`
-  Welcome to setup!!!
-  
-  Options:
-  1: Add token
-  2: Remove token
-  3: Add pair
-  4: Add exchange
-  5: Test arbitrage
-  6: Test arbitrage tx
-  7: Run arbitrage bot
-  `);
-  const option = parseInt(prompt('Select an option: '));
-  switch (option) {
-    case 1:
-      await addToken();
-      break;
-    case 2:
-      await removeToken();
-      break;
-    case 3:
-      await addPair();
-      break;
-    case 4:
-      await addExchange();
-      break;
-    case 5:
-      await testArbitrage();
-      break;
-    case 6:
-      await testArbitrage();
-      break;
-    case 7:
-      await web3.eth
-        .subscribe('newPendingTransactions')
-        .on('data', async (txHash) => {
-          // const startTime = new Date();
-          const txData = await decodeTransaction(web3, txHash);
-          if (!txData) return;
-          runArb(txData.token, false);
-        });
-      break;
-    default:
-      console.log('Invalid option');
-      quitOrRerun();
-  }
 };
 
 main();
