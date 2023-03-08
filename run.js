@@ -55,7 +55,6 @@ function rand(min, max) {
 
 const runArb = async (tokenAddress, addTokensCalled) => {
   if (!tokenAddress) return;
-  console.log(`Handling ${tokenAddress}`);
   const pairs = await db.getPairs(tokenAddress.toString());
   if ((!pairs || pairs.length === 0) && !addTokensCalled) {
     await addToken(tokenAddress);
