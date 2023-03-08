@@ -143,6 +143,10 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
     );
 
     console.log(bestRoute);
+    if(process.env.READONLY_MODE !== '0') {
+      console.log('Readonly mode, not taking trade')
+      return;
+    }
 
     await executeTrade(bestRoute, amountIn, grossProfit);
 
