@@ -116,7 +116,7 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
     const grossProfit = bestAmount.sub(amountIn);
     if (grossProfit.lt(ethers.utils.parseEther('0.002'))) {
       // 0.0036
-      if (grossProfit.gt(ethers.utils.parseEther('0'))) {
+      if (parseInt(grossProfit) > 0) {
         console.log(
           `No profitable trade found with ${ethers.utils.formatEther(
             amountIn
