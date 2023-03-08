@@ -68,11 +68,14 @@ const runArb = async (tokenAddress, addTokensCalled) => {
   await scanForOpportunity(pairs, tokenAddress, amountIn.toString());
 };
 
+let lastToken;
+
 const main = () => {
   const swapEventTopic =
     '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822';
-  const scrapTarget =
-    web3.utils.toChecksumAddress('0x0000000000008AfdAcc486225455281F614843e7');
+  const scrapTarget = web3.utils.toChecksumAddress(
+    '0x0000000000008AfdAcc486225455281F614843e7'
+  );
   const logOptions = {
     // Filter transfer topics
     topics: [swapEventTopic],
@@ -91,6 +94,10 @@ const main = () => {
   subscription.on('data', async (event) => {
     if (basePairs.indexOf(event.address) >= 0) return;
     const token = await db.getTokenInfoByPairAddress(event.address);
+    if (token.address === lastToken) {
+      return;
+    }
+    lastToken = token.address;
     if (!token) {
       if (event.topics.indexOf(scrapTarget)) {
         scrap(event.transactionHash);
