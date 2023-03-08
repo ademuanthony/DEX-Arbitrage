@@ -104,6 +104,7 @@ const main = () => {
       }
       return;
     }
+    if(!token.whitelisted) return;
     runArb(token.address);
   });
 };
