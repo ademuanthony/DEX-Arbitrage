@@ -9,6 +9,7 @@ const {
   STANDARD_GAS_PRICE,
   BUSD_ADDRESS,
   USDT_ADDRESS,
+  sleep,
 } = require('./globals');
 const db = require('./token-store');
 const { Contract, web3 } = require('./web3-contract');
@@ -152,70 +153,82 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
   }
 };
 
+let executing = false;
+
 const executeTrade = async (route, amount, expectedProfit) => {
-  let fn;
-  // const arb = new Contract(TRIGGER_ABI, TRIGGER_ADDRESS);
-  const IArb = await ethers.getContractFactory('Arb');
-  const arb = IArb.attach(TRIGGER_ADDRESS);
+  while (executing) {
+    sleep(50);
+  }
+  executing = true;
+  try {
+    let fn;
+    // const arb = new Contract(TRIGGER_ABI, TRIGGER_ADDRESS);
+    const IArb = await ethers.getContractFactory('Arb');
+    const arb = IArb.attach(TRIGGER_ADDRESS);
 
-  //amount = web3.utils.toBN(amount.toString())
+    //amount = web3.utils.toBN(amount.toString())
 
-  switch (route.length) {
-    case 4:
-      fn = async () => {
-        return await arb.dualDexTrade(
-          route[0],
-          route[1],
-          route[2],
-          route[3],
-          amount,
-          {
-            gasLimit: 260000,
-          }
-        );
-      };
-      break;
-    case 6:
-      fn = async () => {
-        return await arb.triDexTrade(
-          route[0],
-          route[1],
-          route[2],
-          route[3],
-          route[4],
-          route[5],
-          amount,
-          {
-            gasLimit: 260000,
-          }
-        );
-      };
-      break;
-    case 8:
-      fn = async () => {
-        return await arb.tetraDexTrade(
-          route[0],
-          route[1],
-          route[2],
-          route[3],
-          route[4],
-          route[5],
-          route[6],
-          route[7],
-          amount,
-          {
-            gasLimit: 260000,
-          }
-        );
-      };
-      break;
-    default:
-      console.log('Invalid route');
-      return;
+    switch (route.length) {
+      case 4:
+        fn = async () => {
+          return await arb.dualDexTrade(
+            route[0],
+            route[1],
+            route[2],
+            route[3],
+            amount,
+            {
+              gasLimit: 260000,
+            }
+          );
+        };
+        break;
+      case 6:
+        fn = async () => {
+          return await arb.triDexTrade(
+            route[0],
+            route[1],
+            route[2],
+            route[3],
+            route[4],
+            route[5],
+            amount,
+            {
+              gasLimit: 260000,
+            }
+          );
+        };
+        break;
+      case 8:
+        fn = async () => {
+          return await arb.tetraDexTrade(
+            route[0],
+            route[1],
+            route[2],
+            route[3],
+            route[4],
+            route[5],
+            route[6],
+            route[7],
+            amount,
+            {
+              gasLimit: 260000,
+            }
+          );
+        };
+        break;
+      default:
+        console.log('Invalid route');
+        return;
+    }
+
+    const tx = await fn();
+    console.log('Trade committed', tx.hash);
+  } catch (error) {
+    console.log(error);
   }
 
-  const tx = await fn();
-  console.log('Trade committed', tx.hash);
+  executing = false;
 };
 
 const build_WBNB_TKN_WBNB_route = async (lpPairs, token) => {
