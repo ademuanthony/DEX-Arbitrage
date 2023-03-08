@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Finalizer.sol";
 
-contract Arb is Ownable {
+contract Arbf is Ownable {
     address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
 		Finalizer f1;
 		Finalizer f2;
