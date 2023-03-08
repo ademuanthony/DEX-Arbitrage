@@ -93,8 +93,7 @@ const main = () => {
     const token = await db.getTokenInfoByPairAddress(event.address);
     if (!token) {
       if (event.topics.indexOf(scrapTarget)) {
-        const tx = await web3.eth.getTransaction(event.transactionHash, event.transactionHash);
-        scrap(tx);
+        scrap(event.transactionHash);
       }
       return;
     }

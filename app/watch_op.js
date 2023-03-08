@@ -18,9 +18,9 @@ const abi3 = [
 
 let i  = 0
 
-const scrap = async (tx, hash) => {
+const scrap = async (hash) => {
   try {
-    // const tx = await web3.eth.getTransaction(hash);
+    const tx = await web3.eth.getTransaction(hash);
     if (!tx || tx.to != targetCA) return;
     if (
       !tx ||
