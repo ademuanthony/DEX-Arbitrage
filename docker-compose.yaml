@@ -1,0 +1,21 @@
+version: '3.9'
+services:
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '6379:6379'
+  runner:
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./runner.Dockerfile
+    depends_on:
+      - redis
+  monitor:
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ./monitor.Dockerfile
+    depends_on:
+      - runner
+      - redis

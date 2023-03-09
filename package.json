@@ -4,7 +4,8 @@
   "description": "",
   "main": "arb.js",
   "scripts": {
-    "start": "node run.js",
+    "monitor": "node app/monitor.js",
+    "runner": "node run.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "setup": "node app/setup.js"
   },
