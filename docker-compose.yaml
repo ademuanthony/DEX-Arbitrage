@@ -9,8 +9,6 @@ services:
     build:
       context: .
       dockerfile: ./monitor.Dockerfile
-    depends_on:
-      - redis
   
   runner:
     restart: on-failure
@@ -18,5 +16,4 @@ services:
       context: .
       dockerfile: ./runner.Dockerfile
     depends_on:
-      - redis
       - monitor
