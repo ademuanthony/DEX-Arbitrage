@@ -316,7 +316,7 @@ const build_WBNB_TKN_USDT_WBNB_routes = async (lpPairs, token) => {
         bnbPairs[i].router,
         WBNB_ADDRESS,
         token,
-        BUSD_ADDRESS,
+        USDT_ADDRESS,
       ]);
     }
   }
@@ -337,7 +337,7 @@ const build_WBNB_USDT_TKN_WBNB_routes = async (lpPairs, token) => {
         usdtPairs[j].router,
         bnbPairs[i].router,
         WBNB_ADDRESS,
-        BUSD_ADDRESS,
+        USDT_ADDRESS,
         token,
       ]);
     }
