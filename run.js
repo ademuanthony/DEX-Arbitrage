@@ -21,6 +21,11 @@ const {
 const { scanForOpportunity } = require('./app/arbitrage');
 const { scrap } = require('./app/watch_op');
 
+const redis = require('redis');
+const { randomUUID } = require('crypto');
+const client = redis.createClient();
+const subscriber = client.duplicate();
+
 const demo = async () => {
   const hash =
     '0x49e8657627abb79fb1c9ea1fc7c938a6e7e20b6adcf9ed0434699dcc800a8b8d';
@@ -70,7 +75,7 @@ const runArb = async (tokenAddress, addTokensCalled) => {
 
 let lastToken;
 
-const main = () => {
+const main = async () => {
   const swapEventTopic =
     '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822';
   const scrapTarget = web3.utils.toChecksumAddress(
@@ -89,9 +94,14 @@ const main = () => {
     '0xd99c7F6C65857AC913a8f880A4cb84032AB2FC5b',
   ];
 
-  let subscription = web3.eth.subscribe('logs', logOptions);
+  await client.connect();
+  await subscriber.connect();
+  const clientId = randomUUID();
 
-  subscription.on('data', async (event) => {
+  await client.publish('addNewBee', clientId);
+
+  await subscriber.subscribe(`newEvent_${clientId}`, async (message) => {
+    const event = JSON.parse(message);
     if (basePairs.indexOf(event.address) >= 0) return;
     const token = await db.getTokenInfoByPairAddress(event.address);
     if (token.address === lastToken) {
@@ -104,7 +114,7 @@ const main = () => {
       }
       return;
     }
-    if(!token.whitelisted) return;
+    if (!token.whitelisted) return;
     runArb(token.address);
   });
 };

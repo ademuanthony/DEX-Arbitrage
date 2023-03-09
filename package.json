@@ -27,6 +27,7 @@
     "hardhat": "^2.8.3",
     "pg": "^8.9.0",
     "prompt-sync": "^4.2.0",
+    "redis": "^4.6.5",
     "web3": "^1.8.2",
     "web3-eth-contract": "^1.8.2",
     "yargs": "^17.7.1"
