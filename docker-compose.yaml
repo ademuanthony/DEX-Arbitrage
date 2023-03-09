@@ -6,12 +6,16 @@ services:
   #     - '6379:6379'
   monitor: 
     restart: on-failure
+    env_file:
+      - configs/.env_docker_compose
     build:
       context: .
       dockerfile: ./monitor.Dockerfile
   
   runner:
     restart: on-failure
+    env_file:
+      - configs/.env_docker_compose
     build:
       context: .
       dockerfile: ./runner.Dockerfile

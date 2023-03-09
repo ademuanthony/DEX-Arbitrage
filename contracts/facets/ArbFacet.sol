@@ -1,77 +1,17 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./shared/Access/CallProtection.sol";
+import "./OwnershipFacet.sol";
+import "../libraries/LibDiamond.sol";
+import {IWBNB} from "../interfaces/IWBNB.sol";
+import {IERC20} from "../interfaces/IERC20.sol";
+import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
+import {IUniswapV2Router} from "../interfaces/IUniswapV2Router.sol";
 
-interface IERC20 {
-    function totalSupply() external view returns (uint256);
-
-    function balanceOf(address account) external view returns (uint256);
-
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
-
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
-
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
-}
-
-interface IWBNB {
-    function withdraw(uint256) external;
-
-    function deposit() external payable;
-}
-
-interface IUniswapV2Router {
-    function getAmountsOut(uint256 amountIn, address[] memory path)
-        external
-        view
-        returns (uint256[] memory amounts);
-
-    function swapExactTokensForTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external returns (uint256[] memory amounts);
-}
-
-interface IUniswapV2Pair {
-    function token0() external view returns (address);
-
-    function token1() external view returns (address);
-
-    function swap(
-        uint256 amount0Out,
-        uint256 amount1Out,
-        address to,
-        bytes calldata data
-    ) external;
-}
-
-contract Arb is Ownable {
-    address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-
+contract ArbFacet is CallProtection {
     function swap(
         address router,
         address _tokenIn,
@@ -110,6 +50,19 @@ contract Arb is Ownable {
         return amountOutMins[path.length - 1];
     }
 
+    function quote(
+        uint amountA,
+        uint reserveA,
+        uint reserveB
+    ) internal pure returns (uint amountB) {
+        require(amountA > 0, "quote: INSUFFICIENT_AMOUNT");
+        require(
+            reserveA > 0 && reserveB > 0,
+            "quote: INSUFFICIENT_LIQUIDITY"
+        );
+        amountB = (amountA * (reserveB)) / reserveA;
+    }
+
     function estimateDualDexTrade(
         address _router1,
         address _router2,
@@ -133,7 +86,7 @@ contract Arb is Ownable {
         address _token1,
         address _token2,
         uint256 _amount
-    ) external onlyOwner {
+    ) external protectedCall {
         uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
         uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
@@ -179,7 +132,7 @@ contract Arb is Ownable {
         address _token2,
         address _token3,
         uint256 _amount
-    ) external onlyOwner {
+    ) external protectedCall {
         uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
         uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
@@ -197,8 +150,8 @@ contract Arb is Ownable {
         require(endBalance > startBalance, "Trade Reverted, No Profit Made");
     }
 
-		// TODO: add a finalizer contract
-		// send the last token to him, call him to finalize, he will swap the token and transfer the amount out to you
+    // TODO: add a finalizer contract
+    // send the last token to him, call him to finalize, he will swap the token and transfer the amount out to you
 
     function estimateTetraDexTrade(
         address _router1,
@@ -243,7 +196,7 @@ contract Arb is Ownable {
         address _token3,
         address _token4,
         uint256 _amount
-    ) external onlyOwner {
+    ) external protectedCall {
         uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
         uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
@@ -266,31 +219,29 @@ contract Arb is Ownable {
         require(endBalance > startBalance, "Trade Reverted, No Profit Made");
     }
 
-    function getBalance(address _tokenContractAddress)
-        external
-        view
-        returns (uint256)
-    {
+    function getBalance(
+        address _tokenContractAddress
+    ) external view returns (uint256) {
         uint256 balance = IERC20(_tokenContractAddress).balanceOf(
             address(this)
         );
         return balance;
     }
 
-    function recoverEth() external onlyOwner {
+    function recoverEth() external protectedCall {
         if (address(this).balance > 0) {
             payable(msg.sender).transfer(address(this).balance);
         }
-				IERC20 token = IERC20(wbnb);
+        IERC20 token = IERC20(LibDiamond.diamondStorage().wbnb);
         token.transfer(msg.sender, token.balanceOf(address(this)));
     }
 
-    function recoverTokens(address tokenAddress) external onlyOwner {
+    function recoverTokens(address tokenAddress) external protectedCall {
         IERC20 token = IERC20(tokenAddress);
         token.transfer(msg.sender, token.balanceOf(address(this)));
     }
 
     receive() external payable {
-        IWBNB(wbnb).deposit{value: msg.value}();
+        IWBNB(LibDiamond.diamondStorage().wbnb).deposit{value: msg.value}();
     }
 }
