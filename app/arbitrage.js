@@ -133,11 +133,11 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
           )} with profit of ${ethers.utils.formatEther(grossProfit)}`
         );
       } else {
-        console.log(
-          `No profitable trade found with ${ethers.utils.formatEther(
-            amountIn
-          )}. Best Amount: ${ethers.utils.formatEther(bestAmount)}`
-        );
+        // console.log(
+        //   `No profitable trade found with ${ethers.utils.formatEther(
+        //     amountIn
+        //   )}. Best Amount: ${ethers.utils.formatEther(bestAmount)}`
+        // );
       }
 
       return;
@@ -172,7 +172,7 @@ const executeTrade = async (route, amount, expectedProfit) => {
   try {
     let fn;
     // const arb = new Contract(TRIGGER_ABI, TRIGGER_ADDRESS);
-    const IArb = await ethers.getContractFactory('Arb');
+    const IArb = await ethers.getContractFactory('ArbFacet');
     const arb = IArb.attach(TRIGGER_ADDRESS);
 
     //amount = web3.utils.toBN(amount.toString())
