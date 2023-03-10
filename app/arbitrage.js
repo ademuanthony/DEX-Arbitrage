@@ -110,7 +110,7 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
     let bestRoute;
 
     for (let i = 0; i < estimates.length; i++) {
-      if(!estimates[i]) continue;
+      if (!estimates[i]) continue;
       if (estimates[i].highestDeviation.gt(grossProfit)) {
         grossProfit = estimates[i].highestDeviation;
         bestAmount = estimates[i].bastAmountIn;
@@ -177,13 +177,15 @@ const executeTrade = async (route, amount, expectedProfit) => {
       case 4:
         fn = async () => {
           return await arb.dualDexTrade(
-            route[0],
-            route[1],
-            route[2],
-            route[3],
-            amount,
             {
-              gasLimit: 500000,
+              router1: route[0],
+              router2: route[1],
+              token1: route[2],
+              token2: route[3],
+              amount,
+            },
+            {
+              gasLimit: 250000,
             }
           );
         };

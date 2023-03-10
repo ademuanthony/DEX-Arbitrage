@@ -33,18 +33,31 @@ async function deployDiamond(log) {
   const cut = [];
 
   const facetName = prompt('Facet name: ');
+  const action = prompt(
+    'Select action (1 = Add, 2 = replace, 3 = Remove and add, 4 = Remove): '
+  );
+
   const Facet = await ethers.getContractFactory(facetName);
   const facet = await Facet.deploy();
-  await facet.deployed();
 
-  const action = prompt('Select action (1 = replace, 2 = Remove and add): ');
+  if (action != '4') {
+    console.log(`${facetName} deployed at ${facet.address}`);
+    await facet.deployed();
+  }
+
   if (action == '1') {
+    cut.push({
+      facetAddress: facet.address,
+      action: FacetCutAction.Add,
+      functionSelectors: getSelectors(facet),
+    });
+  } else if (action == '2') {
     cut.push({
       facetAddress: facet.address,
       action: FacetCutAction.Replace,
       functionSelectors: getSelectors(facet),
     });
-  } else if (action == '2') {
+  } else if (action == '3') {
     cut.push(
       {
         facetAddress: ethers.constants.AddressZero,
@@ -57,6 +70,12 @@ async function deployDiamond(log) {
         functionSelectors: getSelectors(facet),
       }
     );
+  } else if (action == '4') {
+    cut.push({
+      facetAddress: ethers.constants.AddressZero,
+      action: FacetCutAction.Remove,
+      functionSelectors: getSelectors(facet),
+    });
   } else {
     console.log('Invalid action');
     process.exit(1);

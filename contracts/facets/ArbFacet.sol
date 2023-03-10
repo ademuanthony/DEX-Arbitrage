@@ -21,6 +21,13 @@ contract ArbFacet is CallProtection {
         address token1;
         address token2;
     }
+    struct DualTradeInput {
+        address router1;
+        address router2;
+        address token1;
+        address token2;
+        uint256 amount;
+    }
 
     function swap(
         address router,
@@ -147,7 +154,7 @@ contract ArbFacet is CallProtection {
             uint256 highestDeviation
         )
     {
-        (uint256 reserve1A,) = PancakeLibrary.getReserves(
+        (uint256 reserve1A, ) = PancakeLibrary.getReserves(
             IPancakeFactory(IUniswapV2Router(input.router1).factory()).getPair(
                 input.token1,
                 input.token2
@@ -156,7 +163,7 @@ contract ArbFacet is CallProtection {
             input.token2
         );
 
-        (uint256 reserve2A,) = PancakeLibrary.getReserves(
+        (uint256 reserve2A, ) = PancakeLibrary.getReserves(
             IPancakeFactory(IUniswapV2Router(input.router2).factory()).getPair(
                 input.token1,
                 input.token2
@@ -177,7 +184,8 @@ contract ArbFacet is CallProtection {
                 address(this)
             );
 
-            if (startBalance == 0) { // testing amt
+            if (startBalance == 0) {
+                // testing amt
                 startBalance = 1;
             }
 
@@ -220,25 +228,23 @@ contract ArbFacet is CallProtection {
     }
 
     function dualDexTrade(
-        address _router1,
-        address _router2,
-        address _token1,
-        address _token2,
-        uint256 _amount
+        DualTradeInput calldata input
     ) external protectedCall {
-        uint256 startBalance = IERC20(_token1).balanceOf(address(this));
+        uint256 startBalance = IERC20(input.token1).balanceOf(address(this));
         require(
-            startBalance > _amount,
+            startBalance > input.amount,
             "dualDexTrade: INSUFFICIENT WBNB BALANCE"
         );
 
-        uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
-        swap(_router1, _token1, _token2, _amount);
-        uint256 token2Balance = IERC20(_token2).balanceOf(address(this));
+        uint256 token2InitialBalance = IERC20(input.token2).balanceOf(
+            address(this)
+        );
+        swap(input.router1, input.token1, input.token2, input.amount);
+        uint256 token2Balance = IERC20(input.token2).balanceOf(address(this));
         uint256 tradeableAmount = token2Balance - token2InitialBalance;
 
-        swap(_router2, _token2, _token1, tradeableAmount);
-        uint256 endBalance = IERC20(_token1).balanceOf(address(this));
+        swap(input.router2, input.token2, input.token1, tradeableAmount);
+        uint256 endBalance = IERC20(input.token1).balanceOf(address(this));
         require(endBalance > startBalance, "Trade Reverted, No Profit Made");
     }
 
