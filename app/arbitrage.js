@@ -111,10 +111,10 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
     let bestRoute;
 
     for (let i = 0; i < estimates.length; i++) {
+      if (!estimates[i]) continue;
       if(estimates[i].bastAmountIn.gt(zero) && bestAmount.eq(zero)) {
         bestAmount = estimates[i].bastAmountIn;
       }
-      if (!estimates[i]) continue;
       if (estimates[i].highestDeviation.gt(grossProfit)) {
         grossProfit = estimates[i].highestDeviation;
         bestAmount = estimates[i].bastAmountIn;
