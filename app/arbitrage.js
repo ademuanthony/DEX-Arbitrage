@@ -105,11 +105,15 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
     );
 
     // console.log(estimates)
-    let bestAmount = ethers.utils.parseEther('0');
-    let grossProfit = ethers.utils.parseEther('0');
+    const zero = ethers.utils.parseEther('0');
+    let bestAmount = zero;
+    let grossProfit = zero;
     let bestRoute;
 
     for (let i = 0; i < estimates.length; i++) {
+      if(estimates[i].bastAmountIn.gt(zero) && bestAmount.eq(zero)) {
+        bestAmount = estimates[i].bastAmountIn;
+      }
       if (!estimates[i]) continue;
       if (estimates[i].highestDeviation.gt(grossProfit)) {
         grossProfit = estimates[i].highestDeviation;

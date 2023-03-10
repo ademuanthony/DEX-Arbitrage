@@ -194,6 +194,12 @@ contract ArbFacet is CallProtection {
                 if (amount > startBalance) {
                     amount = startBalance;
                 }
+
+                if (i == 5 && bastAmountIn == 0) {
+                    bastAmountIn = amount;
+                }
+                
+
                 if (amount == 0) {
                     continue;
                 }
@@ -220,7 +226,6 @@ contract ArbFacet is CallProtection {
                 if (amtBack2 - amount < highestDeviation) {
                     continue;
                 }
-                bastAmountIn = amount;
                 bestAmountOut = amtBack2;
                 highestDeviation = amtBack2 - amount;
             }
