@@ -11,7 +11,7 @@ if (network === 'bsc') config = require('./../config/bsc.json');
 const main = async () => {
   [owner] = await ethers.getSigners();
   console.log(`Owner: ${owner.address}`);
-  const IArb = await ethers.getContractFactory('Arb');
+  const IArb = await ethers.getContractFactory('Arbf');
   arb = await IArb.attach(process.env.TRIGGER_ADDRESS);
   for (let i = 0; i < config.baseAssets.length; i++) {
     const asset = config.baseAssets[i];

@@ -1,11 +1,25 @@
 require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 
+const CHAIN_IDS = {
+  hardhat: 31337, // chain ID for hardhat testing
+};
+
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
   networks: {
+    hardhat: {
+      chainId: CHAIN_IDS.hardhat,
+      forking: {
+        // Using Alchemy
+        url: process.env.CHAIN_BSC_ARC, // url to RPC node, ${ALCHEMY_KEY} - must be your API key
+        // Using Infura
+        // url: `https://mainnet.infura.io/v3/${INFURA_KEY}`, // ${INFURA_KEY} - must be your API key
+        // blockNumber: 26338082, // a specific block number with which you want to work
+      },
+    },
     aurora: {
       url: `https://mainnet.aurora.dev`,
       accounts: [process.env.privateKey],

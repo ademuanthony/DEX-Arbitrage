@@ -859,410 +859,389 @@ const pairAbi = [
 
 const triggerAbi = [
   {
-    anonymous: false,
-    inputs: [
+    "inputs": [
       {
-        indexed: true,
-        internalType: 'address',
-        name: 'previousOwner',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router1",
+        "type": "address"
       },
       {
-        indexed: true,
-        internalType: 'address',
-        name: 'newOwner',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router2",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "_token1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token2",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
-    name: 'OwnershipTransferred',
-    type: 'event',
+    "name": "dualDexTrade",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: '_router1',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_router2',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token1',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token2',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
+        "components": [
+          {
+            "internalType": "address",
+            "name": "router1",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "router2",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token1",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "token2",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ArbFacet.DualExtimateInput",
+        "name": "input",
+        "type": "tuple"
+      }
     ],
-    name: 'dualDexTrade',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    "name": "estimateDualDexTrade",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "bastAmountIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bestAmountOut",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "hishestDeviation",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: '_router1',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router1",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router2',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router2",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token1',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router3",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token2',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router4",
+        "type": "address"
       },
       {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
+        "internalType": "address",
+        "name": "_token1",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "_token2",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token3",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token4",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
-    name: 'estimateDualDexTrade',
-    outputs: [
+    "name": "estimateTetraDexTrade",
+    "outputs": [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: 'view',
-    type: 'function',
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: '_router1',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router1",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router2',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router2",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router3',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router3",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router4',
-        type: 'address',
+        "internalType": "address",
+        "name": "_token1",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token1',
-        type: 'address',
+        "internalType": "address",
+        "name": "_token2",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token2',
-        type: 'address',
+        "internalType": "address",
+        "name": "_token3",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token3',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token4',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
-    name: 'estimateTetraDexTrade',
-    outputs: [
+    "name": "estimateTriDexTrade",
+    "outputs": [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: 'view',
-    type: 'function',
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: '_router1',
-        type: 'address',
+        "internalType": "address",
+        "name": "router",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router2',
-        type: 'address',
+        "internalType": "address",
+        "name": "_tokenIn",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router3',
-        type: 'address',
+        "internalType": "address",
+        "name": "_tokenOut",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token1',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token2',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token3',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
-    name: 'estimateTriDexTrade',
-    outputs: [
+    "name": "getAmountOutMin",
+    "outputs": [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: 'view',
-    type: 'function',
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: 'router',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_tokenIn',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_tokenOut',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
+        "internalType": "address",
+        "name": "_tokenContractAddress",
+        "type": "address"
+      }
     ],
-    name: 'getAmountOutMin',
-    outputs: [
+    "name": "getBalance",
+    "outputs": [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: 'view',
-    type: 'function',
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: '_tokenContractAddress',
-        type: 'address',
-      },
+        "internalType": "uint256",
+        "name": "minReserve",
+        "type": "uint256"
+      }
     ],
-    name: 'getBalance',
-    outputs: [
+    "name": "getTestValues",
+    "outputs": [
       {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
+        "internalType": "uint256[10]",
+        "name": "",
+        "type": "uint256[10]"
+      }
     ],
-    stateMutability: 'view',
-    type: 'function',
+    "stateMutability": "pure",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: 'owner',
-    outputs: [
+    "inputs": [],
+    "name": "recoverEth",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
+        "internalType": "address",
+        "name": "tokenAddress",
+        "type": "address"
+      }
     ],
-    stateMutability: 'view',
-    type: 'function',
+    "name": "recoverTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: 'recoverEth',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: 'tokenAddress',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router1",
+        "type": "address"
       },
+      {
+        "internalType": "address",
+        "name": "_router2",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_router3",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_router4",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token2",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token3",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token4",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
-    name: 'recoverTokens',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    "name": "tetraDexTrade",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [],
-    name: 'renounceOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
+    "inputs": [
       {
-        internalType: 'address',
-        name: '_router1',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router1",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router2',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router2",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router3',
-        type: 'address',
+        "internalType": "address",
+        "name": "_router3",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_router4',
-        type: 'address',
+        "internalType": "address",
+        "name": "_token1",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token1',
-        type: 'address',
+        "internalType": "address",
+        "name": "_token2",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token2',
-        type: 'address',
+        "internalType": "address",
+        "name": "_token3",
+        "type": "address"
       },
       {
-        internalType: 'address',
-        name: '_token3',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token4',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
-    name: 'tetraDexTrade',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
+    "name": "triDexTrade",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'newOwner',
-        type: 'address',
-      },
-    ],
-    name: 'transferOwnership',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: '_router1',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_router2',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_router3',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token1',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token2',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: '_token3',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
-      },
-    ],
-    name: 'triDexTrade',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    stateMutability: 'payable',
-    type: 'receive',
-  },
+    "stateMutability": "payable",
+    "type": "receive"
+  }
 ];
 
 const erc20Abi = [

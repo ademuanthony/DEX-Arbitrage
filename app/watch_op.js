@@ -57,7 +57,7 @@ const scrap = async (hash) => {
       });
     }
   } catch (error) {
-    console.log('hash failed', hash, error.message);
+    console.log('watch_op:scrap: hash failed', hash, error.message);
   }
 };
 

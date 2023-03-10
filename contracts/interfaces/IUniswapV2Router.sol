@@ -14,4 +14,6 @@ interface IUniswapV2Router {
         address to,
         uint256 deadline
     ) external returns (uint256[] memory amounts);
+
+    function factory() external view returns(address);
 }

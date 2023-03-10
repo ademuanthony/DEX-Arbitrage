@@ -60,8 +60,8 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
       return;
     }
 
-    const IArb = await ethers.getContractFactory('Arb');
-    const arb = IArb.attach(TRIGGER_ADDRESS);
+    const IArb = await ethers.getContractFactory('ArbFacet');
+    const arb = IArb.attach(process.env.TRIGGER_ADDRESS);
 
     amountIn = ethers.utils.parseEther(amountIn);
 
@@ -69,15 +69,14 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
       routes.map(async (route) => {
         switch (route.length) {
           case 4:
-            const result = await arb.estimateDualDexTrade(
-              route[0],
-              route[1],
-              route[2],
-              route[3],
-              amountIn
-            );
+            const result = await arb.estimateDualDexTrade({
+              router1: route[0],
+              router2: route[1],
+              token1: route[2],
+              token2: route[3],
+            });
             return result;
-          case 6:
+          case 16:
             const result6 = await arb.estimateTriDexTrade(
               route[0],
               route[1],
@@ -88,7 +87,7 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
               amountIn
             );
             return result6;
-          case 8:
+          case 18:
             const result8 = await arb.estimateTetraDexTrade(
               route[0],
               route[1],
@@ -104,17 +103,21 @@ const scanForOpportunity = async (pairs, token, amountIn) => {
         }
       })
     );
+
+    // console.log(estimates)
     let bestAmount = ethers.utils.parseEther('0');
+    let grossProfit = ethers.utils.parseEther('0');
     let bestRoute;
 
     for (let i = 0; i < estimates.length; i++) {
-      if (estimates[i].gt(bestAmount)) {
-        bestAmount = estimates[i];
+      if(!estimates[i]) continue;
+      if (estimates[i].highestDeviation.gt(grossProfit)) {
+        grossProfit = estimates[i].highestDeviation;
+        bestAmount = estimates[i].bastAmountIn;
         bestRoute = routes[i];
       }
     }
 
-    const grossProfit = bestAmount.sub(amountIn);
     if (grossProfit.lt(ethers.utils.parseEther(process.env.MINIMUM_PROFIT))) {
       // 0.0036
       if (parseInt(grossProfit) > 0) {
