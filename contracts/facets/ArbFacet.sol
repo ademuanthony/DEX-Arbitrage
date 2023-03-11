@@ -2,10 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
-
-import "./shared/Access/CallProtection.sol";
-import "./OwnershipFacet.sol";
-import "../libraries/LibDiamond.sol";
 import {IWBNB} from "../interfaces/IWBNB.sol";
 import {IERC20} from "../interfaces/IERC20.sol";
 import {IUniswapV2Pair} from "../interfaces/IUniswapV2Pair.sol";
@@ -13,8 +9,12 @@ import {IPancakeFactory} from "../interfaces/IPancakeFactory.sol";
 import {IUniswapV2Router} from "../interfaces/IUniswapV2Router.sol";
 
 import {PancakeLibrary} from "../libraries/PancakeLibrary.sol";
+import {SafeMath} from "../libraries/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ArbFacet is CallProtection {
+contract ArbFacet is Ownable {
+    using SafeMath for uint256;
+
     struct DualExtimateInput {
         address router1;
         address router2;
@@ -26,8 +26,12 @@ contract ArbFacet is CallProtection {
         address router2;
         address token1;
         address token2;
-        uint256 amount;
     }
+
+    address immutable wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+    mapping(address => uint256) tokenBalances;
+    bytes4 private constant TRANSFER_SELECTOR =
+        bytes4(keccak256(bytes("transfer(address,uint256)")));
 
     function swap(
         address router,
@@ -56,33 +60,38 @@ contract ArbFacet is CallProtection {
         address tokenIn,
         address tokenOut,
         address to,
-        uint256 amount
+        // uint256 amountIn,
+        uint256 amountOut
     ) private returns (uint256) {
-        (uint256 reserve0, uint256 reserve1) = PancakeLibrary.getReserves(
-            pair,
-            tokenIn,
-            tokenOut
-        );
-        require(
-            reserve0 > 0 && reserve1 > 0,
-            "PancakeLibrary: INSUFFICIENT_LIQUIDITY"
-        );
+        // (uint256 reserve0, uint256 reserve1, ) = IUniswapV2Pair(pair)
+        //     .getReserves();
 
-        (address token0, ) = PancakeLibrary.sortTokens(tokenIn, tokenOut);
+        // require(
+        //     reserve0 > 0 && reserve1 > 0,
+        //     "ArbFacet:swap: INSUFFICIENT_LIQUIDITY"
+        // );
 
-        (uint256 reserveIn, uint256 reserveOut) = tokenIn != token0 // TODO: find out why
-            ? (reserve0, reserve1)
-            : (reserve1, reserve0);
+        // uint256 amount0Out;
+        // uint256 amount1Out;
+        // uint256 amountOut;
 
-        uint256 amountOut = PancakeLibrary.getAmountOut(
-            amount,
-            reserveIn,
-            reserveOut
-        );
+        // unchecked {
+        //     (uint256 reserveIn, uint256 reserveOut) = tokenIn < tokenOut // TODO: find out why
+        //         ? (reserve0, reserve1)
+        //         : (reserve1, reserve0);
 
-        (uint256 amount0Out, uint256 amount1Out) = tokenIn == token0
-            ? (uint256(0), amountOut)
-            : (amountOut, uint256(0));
+        //     uint256 amountInWithFee = amountIn.mul(9975);
+        //     uint256 numerator = amountInWithFee.mul(reserveOut);
+        //     uint256 denominator = reserveIn.mul(10000).add(amountInWithFee);
+        //     amountOut = numerator / denominator;
+        //     (uint256 amount0Out, uint256 amount1Out) = tokenIn < tokenOut
+        //         ? (uint256(0), amountOut)
+        //         : (amountOut, uint256(0));
+        // }
+
+        (uint256 amount0Out, uint256 amount1Out) = tokenIn < tokenOut
+                ? (uint256(0), amountOut)
+                : (amountOut, uint256(0));
 
         IUniswapV2Pair(pair).swap(amount0Out, amount1Out, to, new bytes(0));
 
@@ -130,7 +139,7 @@ contract ArbFacet is CallProtection {
 
         uint256 min = meanPercentage / 2;
         uint256 max = 3 * meanPercentage * 2;
-        uint256 step = (min + max) / 10;
+        uint256 step = (max - min) / 10;
 
         uint[10] memory values;
 
@@ -198,7 +207,6 @@ contract ArbFacet is CallProtection {
                 if (i == 5 && bastAmountIn == 0) {
                     bastAmountIn = amount;
                 }
-                
 
                 if (amount == 0) {
                     continue;
@@ -232,25 +240,108 @@ contract ArbFacet is CallProtection {
         }
     }
 
-    function dualDexTrade(
-        DualTradeInput calldata input
-    ) external protectedCall {
-        uint256 startBalance = IERC20(input.token1).balanceOf(address(this));
-        require(
-            startBalance > input.amount,
-            "dualDexTrade: INSUFFICIENT WBNB BALANCE"
+    function getMinTestValue(
+        uint256 minReserve
+    ) private pure returns (uint256) {
+        if (minReserve < 2e18) {
+            return (500 * minReserve) / (10000);
+        } else if (minReserve < 5e18) {
+            return (300 * minReserve) / (10000);
+        } else if (minReserve < 10e18) {
+            return (200 * minReserve) / (10000);
+        } else if (minReserve < 20e18) {
+            return (150 * minReserve) / (10000);
+        } else if (minReserve < 50e18) {
+            return (140 * minReserve) / (10000);
+        } else if (minReserve < 100e18) {
+            return (100 * minReserve) / (10000);
+        } else if (minReserve < 500e18) {
+            return (50 * minReserve) / (10000);
+        } else {
+            return (10 * minReserve) / (10000);
+        }
+    }
+
+    function getBestAmountIn(
+        uint256 reserveBnbIn,
+        uint256 reserveTknOut,
+        uint256 reserveTknIn,
+        uint256 reserveBnbOut
+    ) private pure returns (uint256) {
+        uint256 minAmount = getMinTestValue(
+            reserveBnbIn > reserveBnbOut ? reserveBnbOut : reserveBnbIn
+        );
+        uint256 maxAmount = 3*minAmount;
+        minAmount = 2*minAmount;
+
+        uint256 step = (maxAmount - minAmount) / 3;
+
+        uint256 bastAmountIn;
+        uint256 highestDeviation;
+
+        for (uint amount = minAmount; amount <= maxAmount; amount += step) {
+            uint256 amtBack1 = PancakeLibrary.getAmountOut(
+                amount,
+                reserveBnbIn,
+                reserveTknOut
+            );
+            if (amtBack1 == 0) {
+                continue;
+            }
+            uint256 amtBack2 = PancakeLibrary.getAmountOut(
+                amtBack1,
+                reserveTknIn,
+                reserveBnbOut
+            );
+            if (amtBack2 < amount) {
+                continue;
+            }
+            if (amtBack2 - amount < highestDeviation) {
+                continue;
+            }
+            bastAmountIn = amount;
+            highestDeviation = amtBack2 - amount;
+        }
+
+        return bastAmountIn;
+    }
+
+    function dualDexTrade(DualTradeInput calldata input) external onlyOwner {
+        (uint256 reserve0In, uint256 reserve0Out, ) = IUniswapV2Pair(input.router1)
+            .getReserves();
+        (uint256 reserve1In, uint256 reserve1Out, ) = IUniswapV2Pair(input.router2)
+            .getReserves();
+        
+        (uint256 reserveBnbIn, uint256 reserveTknOut) = input.token1 < input.token2? (reserve0In, reserve0Out): (reserve0Out, reserve0In);
+        (uint256 reserveBnbOut, uint256 reserveTknIn) = input.token1 < input.token2? (reserve1In, reserve1Out): (reserve1Out, reserve1In);
+
+        uint bestAmountIn = getBestAmountIn(reserveBnbIn, reserveTknOut, reserveTknIn, reserveBnbOut);
+        if(bestAmountIn == 0) {
+            return;
+            // TODO: remove test value; bestAmountIn = 1 ether;
+        }
+
+        IERC20(input.token1).transfer(input.router1, bestAmountIn);
+
+        uint256 tradeableAmount = swap(
+            input.router1,
+            input.token1,
+            input.token2,
+            input.router2,
+            PancakeLibrary.getAmountOut(bestAmountIn, reserveBnbIn, reserveTknOut)
+            // bestAmountIn
         );
 
-        uint256 token2InitialBalance = IERC20(input.token2).balanceOf(
-            address(this)
+        uint256 amountBck = swap(
+            input.router2,
+            input.token2,
+            input.token1,
+            address(this),
+            PancakeLibrary.getAmountOut(tradeableAmount, reserveTknIn, reserveBnbOut)
+            // tradeableAmount
         );
-        swap(input.router1, input.token1, input.token2, input.amount);
-        uint256 token2Balance = IERC20(input.token2).balanceOf(address(this));
-        uint256 tradeableAmount = token2Balance - token2InitialBalance;
-
-        swap(input.router2, input.token2, input.token1, tradeableAmount);
-        uint256 endBalance = IERC20(input.token1).balanceOf(address(this));
-        require(endBalance > startBalance, "Trade Reverted, No Profit Made");
+        // require(amountBck >= input.amount, "Trade Reverted, No Profit Made");
+        require(amountBck > bestAmountIn / 2, "Trade Reverted, No Profit Made");
     }
 
     function estimateTriDexTrade(
@@ -286,7 +377,7 @@ contract ArbFacet is CallProtection {
         address _token2,
         address _token3,
         uint256 _amount
-    ) external protectedCall {
+    ) external onlyOwner {
         uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
         uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
@@ -350,7 +441,7 @@ contract ArbFacet is CallProtection {
         address _token3,
         address _token4,
         uint256 _amount
-    ) external protectedCall {
+    ) external onlyOwner {
         uint256 startBalance = IERC20(_token1).balanceOf(address(this));
 
         uint256 token2InitialBalance = IERC20(_token2).balanceOf(address(this));
@@ -382,20 +473,22 @@ contract ArbFacet is CallProtection {
         return balance;
     }
 
-    function recoverEth() external protectedCall {
+    function recoverEth() external onlyOwner {
         if (address(this).balance > 0) {
             payable(msg.sender).transfer(address(this).balance);
         }
-        IERC20 token = IERC20(LibDiamond.diamondStorage().wbnb);
+        IERC20 token = IERC20(wbnb);
         token.transfer(msg.sender, token.balanceOf(address(this)));
     }
 
-    function recoverTokens(address tokenAddress) external protectedCall {
+    function recoverTokens(address tokenAddress) external onlyOwner {
+        tokenBalances[tokenAddress] = 0;
         IERC20 token = IERC20(tokenAddress);
         token.transfer(msg.sender, token.balanceOf(address(this)));
     }
 
     receive() external payable {
-        IWBNB(LibDiamond.diamondStorage().wbnb).deposit{value: msg.value}();
+        IWBNB(wbnb).deposit{value: msg.value}();
+        tokenBalances[wbnb] = tokenBalances[wbnb] + msg.value;
     }
 }

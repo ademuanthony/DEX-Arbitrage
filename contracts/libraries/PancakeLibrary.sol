@@ -15,9 +15,8 @@ library PancakeLibrary {
         returns (address token0, address token1)
     {
         require(tokenA != tokenB, "PancakeLibrary: IDENTICAL_ADDRESSES");
-        (token0, token1) = tokenA < tokenB
-            ? (tokenA, tokenB)
-            : (tokenB, tokenA);
+
+        (token0, token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), "PancakeLibrary: ZERO_ADDRESS");
     }
 

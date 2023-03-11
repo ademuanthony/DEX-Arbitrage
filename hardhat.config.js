@@ -1,4 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-ethers");
+require("hardhat-gas-reporter");
 require("dotenv").config();
 
 const CHAIN_IDS = {
@@ -10,16 +12,16 @@ const CHAIN_IDS = {
  */
 module.exports = {
   networks: {
-    // hardhat: {
-    //   chainId: CHAIN_IDS.hardhat,
-    //   forking: {
-    //     // Using Alchemy
-    //     url: process.env.CHAIN_BSC_ARC, // url to RPC node, ${ALCHEMY_KEY} - must be your API key
-    //     // Using Infura
-    //     // url: `https://mainnet.infura.io/v3/${INFURA_KEY}`, // ${INFURA_KEY} - must be your API key
-    //     // blockNumber: 26338082, // a specific block number with which you want to work
-    //   },
-    // },
+    hardhat: {
+      chainId: CHAIN_IDS.hardhat,
+      forking: {
+        // Using Alchemy
+        url: process.env.CHAIN_BSC_ARC, // url to RPC node, ${ALCHEMY_KEY} - must be your API key
+        // Using Infura
+        // url: `https://mainnet.infura.io/v3/${INFURA_KEY}`, // ${INFURA_KEY} - must be your API key
+        blockNumber: 26369544, // a specific block number with which you want to work
+      },
+    },
     aurora: {
       url: `https://mainnet.aurora.dev`,
       accounts: [process.env.privateKey],
@@ -32,6 +34,9 @@ module.exports = {
       url: process.env.CHAIN_STACK_HTTPS,
       accounts: [process.env.privateKey],
     },
+  },
+  mocha: {
+    timeout: 100000000
   },
   solidity: {
     compilers: [
