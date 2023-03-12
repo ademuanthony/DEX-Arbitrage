@@ -15,6 +15,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract ArbFacet {
     using SafeMath for uint256;
 
+    struct Token {
+        address wbnbPair;
+        address usdtPair;
+        address busdPair;
+        address cakePair;
+    }
+
+    struct AddTokenInput {
+        address tokenAddress;
+        uint8 exchange;
+        address wbnbPair;
+        address usdtPair;
+        address busdPair;
+        address cakePair;
+    }
+
     struct DualExtimateInput {
         address router1;
         address router2;
@@ -23,6 +39,7 @@ contract ArbFacet {
     }
 
     struct DualTradeInput {
+        // uint8 direction;
         address router1;
         address router2;
         // address token1; always wbnb
@@ -47,21 +64,14 @@ contract ArbFacet {
     uint8 constant EXCHANGE_BIS = 3;
     uint8 constant EXCHANGE_BABY = 4;
 
-    bytes32 constant CAKE_INIT_CODE_PAIR_HASH = 0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5;
-    bytes32 constant APE_INIT_CODE_PAIR_HASH = 0xf4ccce374816856d11f00e4069e7cada164065686fbef53c6167a63ec2fd8c5b;
-    bytes32 constant BIS_INIT_CODE_PAIR_HASH = 0xfea293c909d87cd4153593f077b76bb7e94340200f4ee84211ae8e4f9bd7ffdf;
-    bytes32 constant BABY_INIT_CODE_PAIR_HASH = 0x5646bd1da4b93040d09d9a44666ac5ad7d4eb0711841defc40f00dce1aba0b06;
-
     address private immutable _owner;
     address private immutable _feeReceiver;
 
     address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
-    mapping(address => uint256) tokenBalances;
-    bytes4 private constant TRANSFER_SELECTOR =
-        bytes4(keccak256(bytes("transfer(address,uint256)")));
+    mapping(address => mapping(uint8 => Token)) private _tokens;
 
-    constructor() {
-        _feeReceiver = msg.sender;
+    constructor(address feeReceiver) {
+        _feeReceiver = feeReceiver;
         _owner = msg.sender;
     }
 
@@ -80,12 +90,14 @@ contract ArbFacet {
         _;
     }
 
-    function getPairAddress(address token0, address token1, uint8 exchange) private pure returns(address) {
-        if(exchange == EXCHANGE_CAKE) {
-
-        }
-
-        return address(0);
+    function addToken(AddTokenInput calldata input) external {
+        require(owner() == msg.sender, "Ownable: caller is not the owner");
+        _tokens[input.tokenAddress][input.exchange] = Token(
+            input.wbnbPair,
+            input.usdtPair,
+            input.busdPair,
+            input.cakePair
+        );
     }
 
     function swap(
@@ -360,9 +372,60 @@ contract ArbFacet {
         return bastAmountIn;
     }
 
+    function getPairs(address token, uint8 direction) private view returns(address, address) {
+        mapping(address => mapping(uint8 => Token)) storage tokens = _tokens;
+        
+        if(direction == DIRECTION_CAKE_APE) {
+            return (tokens[token][EXCHANGE_CAKE].wbnbPair, tokens[token][EXCHANGE_APE].wbnbPair);
+        }
+
+        if(direction == DIRECTION_APE_CAKE) {
+            return (tokens[token][EXCHANGE_APE].wbnbPair, tokens[token][EXCHANGE_CAKE].wbnbPair);
+        }
+        
+
+        if(direction == DIRECTION_CAKE_BIS) {
+            return (tokens[token][EXCHANGE_CAKE].wbnbPair, tokens[token][EXCHANGE_BIS].wbnbPair);
+        }
+
+        if(direction == DIRECTION_BIS_CAKE) {
+            return (tokens[token][EXCHANGE_BIS].wbnbPair, tokens[token][EXCHANGE_CAKE].wbnbPair);
+        }
+        
+
+        if(direction == DIRECTION_CAKE_BABY) {
+            return (tokens[token][EXCHANGE_CAKE].wbnbPair, tokens[token][EXCHANGE_BABY].wbnbPair);
+        }
+
+        if(direction == DIRECTION_BABY_CAKE) {
+            return (tokens[token][EXCHANGE_BABY].wbnbPair, tokens[token][EXCHANGE_CAKE].wbnbPair);
+        }
+        
+
+        if(direction == DIRECTION_APE_BABY) {
+            return (tokens[token][EXCHANGE_APE].wbnbPair, tokens[token][EXCHANGE_BABY].wbnbPair);
+        }
+
+        if(direction == DIRECTION_BABY_APE) {
+            return (tokens[token][EXCHANGE_BABY].wbnbPair, tokens[token][EXCHANGE_APE].wbnbPair);
+        }
+        
+
+        if(direction == DIRECTION_BIS_BABY) {
+            return (tokens[token][EXCHANGE_BIS].wbnbPair, tokens[token][EXCHANGE_BABY].wbnbPair);
+        }
+
+        if(direction == DIRECTION_BABY_BIS) {
+            return (tokens[token][EXCHANGE_BABY].wbnbPair, tokens[token][EXCHANGE_BIS].wbnbPair);
+        }
+
+        return (address(0), address(0));
+    }
+
     // bytes4(keccak256(bytes('dualDexTrade(address,address,address,address)')))
     function dualDexTrade(DualTradeInput calldata input) external {
         require(msg.sender == _owner, "ArbFacet:dualDexTrade NOT_ALLOWED");
+        //(address pair1, address pair2) = getPairs(input.token2, input.direction);
         (uint256 reserve0In, uint256 reserve0Out, ) = IUniswapV2Pair(
             input.router1
         ).getReserves();
@@ -370,12 +433,10 @@ contract ArbFacet {
             input.router2
         ).getReserves();
 
-        (uint256 reserveBnbIn, uint256 reserveTknOut) = wbnb <
-            input.token2
+        (uint256 reserveBnbIn, uint256 reserveTknOut) = wbnb < input.token2
             ? (reserve0In, reserve0Out)
             : (reserve0Out, reserve0In);
-        (uint256 reserveBnbOut, uint256 reserveTknIn) = wbnb <
-            input.token2
+        (uint256 reserveBnbOut, uint256 reserveTknIn) = wbnb < input.token2
             ? (reserve1In, reserve1Out)
             : (reserve1Out, reserve1In);
 
@@ -560,13 +621,11 @@ contract ArbFacet {
     }
 
     function recoverTokens(address tokenAddress) external onlyOwner {
-        tokenBalances[tokenAddress] = 0;
         IERC20 token = IERC20(tokenAddress);
         token.transfer(_feeReceiver, token.balanceOf(address(this)));
     }
 
     receive() external payable {
         IWBNB(wbnb).deposit{value: msg.value}();
-        tokenBalances[wbnb] = tokenBalances[wbnb] + msg.value;
     }
 }
