@@ -11,6 +11,7 @@ const CHAIN_IDS = {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  
   networks: {
     hardhat: {
       chainId: CHAIN_IDS.hardhat,
@@ -39,6 +40,12 @@ module.exports = {
     timeout: 100000000
   },
   solidity: {
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 300
+      }
+    },
     compilers: [
       { version: "0.8.7" },
       { version: "0.7.6" },

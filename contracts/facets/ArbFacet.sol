@@ -12,7 +12,7 @@ import {PancakeLibrary} from "../libraries/PancakeLibrary.sol";
 import {SafeMath} from "../libraries/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ArbFacet is Ownable {
+contract ArbFacet {
     using SafeMath for uint256;
 
     struct DualExtimateInput {
@@ -21,17 +21,72 @@ contract ArbFacet is Ownable {
         address token1;
         address token2;
     }
+
     struct DualTradeInput {
         address router1;
         address router2;
-        address token1;
+        // address token1; always wbnb
         address token2;
     }
 
-    address immutable wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+    uint8 constant DIRECTION_CAKE_APE = 1;
+    uint8 constant DIRECTION_APE_CAKE = 2;
+    uint8 constant DIRECTION_CAKE_BIS = 3;
+    uint8 constant DIRECTION_BIS_CAKE = 4;
+    uint8 constant DIRECTION_APE_BIS = 5;
+    uint8 constant DIRECTION_BIS_APE = 6;
+    uint8 constant DIRECTION_CAKE_BABY = 7;
+    uint8 constant DIRECTION_BABY_CAKE = 8;
+    uint8 constant DIRECTION_APE_BABY = 9;
+    uint8 constant DIRECTION_BABY_APE = 10;
+    uint8 constant DIRECTION_BIS_BABY = 11;
+    uint8 constant DIRECTION_BABY_BIS = 12;
+
+    uint8 constant EXCHANGE_CAKE = 1;
+    uint8 constant EXCHANGE_APE = 2;
+    uint8 constant EXCHANGE_BIS = 3;
+    uint8 constant EXCHANGE_BABY = 4;
+
+    bytes32 constant CAKE_INIT_CODE_PAIR_HASH = 0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5;
+    bytes32 constant APE_INIT_CODE_PAIR_HASH = 0xf4ccce374816856d11f00e4069e7cada164065686fbef53c6167a63ec2fd8c5b;
+    bytes32 constant BIS_INIT_CODE_PAIR_HASH = 0xfea293c909d87cd4153593f077b76bb7e94340200f4ee84211ae8e4f9bd7ffdf;
+    bytes32 constant BABY_INIT_CODE_PAIR_HASH = 0x5646bd1da4b93040d09d9a44666ac5ad7d4eb0711841defc40f00dce1aba0b06;
+
+    address private immutable _owner;
+    address private immutable _feeReceiver;
+
+    address constant wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     mapping(address => uint256) tokenBalances;
     bytes4 private constant TRANSFER_SELECTOR =
         bytes4(keccak256(bytes("transfer(address,uint256)")));
+
+    constructor() {
+        _feeReceiver = msg.sender;
+        _owner = msg.sender;
+    }
+
+    /**
+     * @dev Returns the address of the current owner.
+     */
+    function owner() public view virtual returns (address) {
+        return _owner;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(owner() == msg.sender, "Ownable: caller is not the owner");
+        _;
+    }
+
+    function getPairAddress(address token0, address token1, uint8 exchange) private pure returns(address) {
+        if(exchange == EXCHANGE_CAKE) {
+
+        }
+
+        return address(0);
+    }
 
     function swap(
         address router,
@@ -90,8 +145,8 @@ contract ArbFacet is Ownable {
         // }
 
         (uint256 amount0Out, uint256 amount1Out) = tokenIn < tokenOut
-                ? (uint256(0), amountOut)
-                : (amountOut, uint256(0));
+            ? (uint256(0), amountOut)
+            : (amountOut, uint256(0));
 
         IUniswapV2Pair(pair).swap(amount0Out, amount1Out, to, new bytes(0));
 
@@ -271,8 +326,8 @@ contract ArbFacet is Ownable {
         uint256 minAmount = getMinTestValue(
             reserveBnbIn > reserveBnbOut ? reserveBnbOut : reserveBnbIn
         );
-        uint256 maxAmount = 3*minAmount;
-        minAmount = 2*minAmount;
+        uint256 maxAmount = 3 * minAmount;
+        minAmount = 2 * minAmount;
 
         uint256 step = (maxAmount - minAmount) / 3;
 
@@ -300,44 +355,67 @@ contract ArbFacet is Ownable {
                 continue;
             }
             bastAmountIn = amount;
-            highestDeviation = amtBack2 - amount;
         }
 
         return bastAmountIn;
     }
 
-    function dualDexTrade(DualTradeInput calldata input) external onlyOwner {
-        (uint256 reserve0In, uint256 reserve0Out, ) = IUniswapV2Pair(input.router1)
-            .getReserves();
-        (uint256 reserve1In, uint256 reserve1Out, ) = IUniswapV2Pair(input.router2)
-            .getReserves();
-        
-        (uint256 reserveBnbIn, uint256 reserveTknOut) = input.token1 < input.token2? (reserve0In, reserve0Out): (reserve0Out, reserve0In);
-        (uint256 reserveBnbOut, uint256 reserveTknIn) = input.token1 < input.token2? (reserve1In, reserve1Out): (reserve1Out, reserve1In);
+    // bytes4(keccak256(bytes('dualDexTrade(address,address,address,address)')))
+    function dualDexTrade(DualTradeInput calldata input) external {
+        require(msg.sender == _owner, "ArbFacet:dualDexTrade NOT_ALLOWED");
+        (uint256 reserve0In, uint256 reserve0Out, ) = IUniswapV2Pair(
+            input.router1
+        ).getReserves();
+        (uint256 reserve1In, uint256 reserve1Out, ) = IUniswapV2Pair(
+            input.router2
+        ).getReserves();
 
-        uint bestAmountIn = getBestAmountIn(reserveBnbIn, reserveTknOut, reserveTknIn, reserveBnbOut);
-        if(bestAmountIn == 0) {
+        (uint256 reserveBnbIn, uint256 reserveTknOut) = wbnb <
+            input.token2
+            ? (reserve0In, reserve0Out)
+            : (reserve0Out, reserve0In);
+        (uint256 reserveBnbOut, uint256 reserveTknIn) = wbnb <
+            input.token2
+            ? (reserve1In, reserve1Out)
+            : (reserve1Out, reserve1In);
+
+        uint bestAmountIn = getBestAmountIn(
+            reserveBnbIn,
+            reserveTknOut,
+            reserveTknIn,
+            reserveBnbOut
+        );
+        if (bestAmountIn == 0) {
             return;
-            // TODO: remove test value; bestAmountIn = 1 ether;
+            // TODO: remove test value;
+            // bestAmountIn = 1 ether;
         }
 
-        IERC20(input.token1).transfer(input.router1, bestAmountIn);
+        IERC20(wbnb).transfer(input.router1, bestAmountIn);
 
         uint256 tradeableAmount = swap(
             input.router1,
-            input.token1,
+            wbnb,
             input.token2,
             input.router2,
-            PancakeLibrary.getAmountOut(bestAmountIn, reserveBnbIn, reserveTknOut)
+            PancakeLibrary.getAmountOut(
+                bestAmountIn,
+                reserveBnbIn,
+                reserveTknOut
+            )
             // bestAmountIn
         );
 
         uint256 amountBck = swap(
             input.router2,
             input.token2,
-            input.token1,
+            wbnb,
             address(this),
-            PancakeLibrary.getAmountOut(tradeableAmount, reserveTknIn, reserveBnbOut)
+            PancakeLibrary.getAmountOut(
+                tradeableAmount,
+                reserveTknIn,
+                reserveBnbOut
+            )
             // tradeableAmount
         );
         // require(amountBck >= input.amount, "Trade Reverted, No Profit Made");
@@ -475,16 +553,16 @@ contract ArbFacet is Ownable {
 
     function recoverEth() external onlyOwner {
         if (address(this).balance > 0) {
-            payable(msg.sender).transfer(address(this).balance);
+            payable(_feeReceiver).transfer(address(this).balance);
         }
         IERC20 token = IERC20(wbnb);
-        token.transfer(msg.sender, token.balanceOf(address(this)));
+        token.transfer(_feeReceiver, token.balanceOf(address(this)));
     }
 
     function recoverTokens(address tokenAddress) external onlyOwner {
         tokenBalances[tokenAddress] = 0;
         IERC20 token = IERC20(tokenAddress);
-        token.transfer(msg.sender, token.balanceOf(address(this)));
+        token.transfer(_feeReceiver, token.balanceOf(address(this)));
     }
 
     receive() external payable {
